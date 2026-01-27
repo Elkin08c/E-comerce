@@ -48,6 +48,9 @@ export default function CustomerLoginPage() {
       }
 
       localStorage.setItem("token", token);
+      if (data.customer?.firstName) {
+        localStorage.setItem("customerName", data.customer.firstName);
+      }
       router.push("/"); 
     } catch (err: unknown) {
       if (err instanceof Error) {

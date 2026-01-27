@@ -10,13 +10,13 @@ export const GET_PRODUCTS = gql`
           name
           sku
           basePrice
+          salePrice
           isActive
           stock: weight # Placeholder, adjusting based on Schema
           tags
         }
       }
     }
-  }
   }
 `;
 
@@ -27,6 +27,7 @@ export const GET_PRODUCT = gql`
       name
       description
       basePrice
+      salePrice
       sku
       stock: weight # Placeholder
       tags
@@ -88,6 +89,26 @@ export const GET_USERS = gql`
            lastName
            isActive
         }
+      }
+    }
+  }
+`;
+
+export const GET_CATEGORY_BY_SLUG = gql`
+  query GetCategoryBySlug($slug: String!) {
+    categoriesBySlug(slug: $slug) {
+      id
+      name
+      description
+      products {
+        id
+        name
+        sku
+        basePrice
+        salePrice
+        isActive
+        stock: weight # Placeholder
+        tags
       }
     }
   }

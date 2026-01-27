@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery } from "@apollo/client/react";
 import { GET_CATEGORIES } from "@/graphql/queries";
 import { ShoppingBag, Search, User, Menu, ShoppingCart, Loader2 } from "lucide-react";
@@ -41,7 +42,7 @@ export default function Navbar() {
           : "bg-transparent border-b border-transparent"
       }`}
     >
-      <div className="container mx-auto flex h-16 items-center px-4 gap-4">
+      <div className="container mx-auto flex h-20 items-center px-4 gap-4">
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
@@ -72,13 +73,16 @@ export default function Navbar() {
         </Sheet>
 
         {/* Logo */}
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-6 shrink-0">
-          <div className="bg-primary p-1.5 rounded-lg">
-            <ShoppingBag className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-bold text-xl tracking-tight hidden sm:inline-block">
-            LUPA <span className="text-primary">Store</span>
-          </span>
+          <Image 
+            src="/logo.png" 
+            alt="COAVPRO" 
+            width={200} 
+            height={64} 
+            className="h-16 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -124,18 +128,24 @@ export default function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                    <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-                     U
+                     {localStorage.getItem("customerName")?.charAt(0).toUpperCase() || "U"}
                    </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                    My Account
+                    <div className="text-xs font-normal text-muted-foreground">
+                        {localStorage.getItem("customerName")}
+                    </div>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Orders</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => {
                     localStorage.removeItem("token");
+                    localStorage.removeItem("customerName");
                     window.location.reload();
                 }}>
                     Log out

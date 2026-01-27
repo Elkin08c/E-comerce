@@ -5,6 +5,7 @@ import { GET_PRODUCT } from "@/graphql/queries";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { Loader2, ShoppingCart, Star, Heart, Share2, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +46,6 @@ export default function ProductDetailPage() {
   }
 
   const product = data?.product;
-
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -95,7 +95,14 @@ export default function ProductDetailPage() {
             <div className="space-y-8">
                 <div>
                      <div className="flex items-center justify-between mb-2">
-                        <Badge variant="outline" className="text-primary border-primary/20">New Arrival</Badge>
+                        <div className="flex gap-2">
+                             <Badge variant="outline" className="text-primary border-primary/20">New Arrival</Badge>
+                             {product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice && (
+                                <Badge variant="destructive">
+                                    {Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100)}% OFF
+                                </Badge>
+                             )}
+                        </div>
                         <div className="flex gap-2">
                             <Button variant="ghost" size="icon" className="rounded-full">
                                 <Share2 className="h-5 w-5 text-muted-foreground" />
@@ -107,7 +114,14 @@ export default function ProductDetailPage() {
                      </div>
                      <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">{product.name}</h1>
                      <div className="flex items-center gap-4 mt-4">
-                         <span className="text-3xl font-bold text-primary">${product.basePrice.toFixed(2)}</span>
+                         {product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice ? (
+                            <div className="flex items-center gap-3">
+                                <span className="text-3xl font-bold text-destructive">${product.salePrice.toFixed(2)}</span>
+                                <span className="text-xl text-muted-foreground line-through">${product.basePrice.toFixed(2)}</span>
+                            </div>
+                         ) : (
+                             <span className="text-3xl font-bold text-primary">${product.basePrice.toFixed(2)}</span>
+                         )}
                          {/* Placeholder for rating */}
                          <div className="flex items-center gap-1 text-sm">
                              <div className="flex text-yellow-500">
@@ -165,6 +179,7 @@ export default function ProductDetailPage() {
             </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
