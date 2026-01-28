@@ -10,9 +10,15 @@ import { Loader2, ShoppingCart, Star, Heart, Share2, ShieldCheck, ArrowLeft } fr
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
+import { useCartStore } from "@/store/cart";
+import { toast } from "sonner";
+import { useState } from "react";
+
 export default function ProductDetailPage() {
   const params = useParams();
   const id = params?.id as string;
+  const { addItem } = useCartStore();
+  const [quantity, setQuantity] = useState(1);
 
   const { data, loading, error } = useQuery(GET_PRODUCT, {
     variables: { id },
@@ -35,10 +41,10 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex flex-col justify-center items-center gap-4 text-center p-4">
-          <h2 className="text-2xl font-bold text-destructive">Error loading product</h2>
+          <h2 className="text-2xl font-bold text-destructive">Error al cargar producto</h2>
           <p className="text-muted-foreground">{error.message}</p>
           <Button asChild variant="outline">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">Volver al Inicio</Link>
           </Button>
         </div>
       </div>
@@ -51,9 +57,9 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-background flex flex-col">
         <Navbar />
         <div className="flex-1 flex flex-col justify-center items-center gap-4 text-center p-4">
-          <h2 className="text-2xl font-bold">Product not found</h2>
+          <h2 className="text-2xl font-bold">Producto no encontrado</h2>
           <Button asChild variant="outline">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">Regresar al Catálogo</Link>
           </Button>
         </div>
       </div>
@@ -68,7 +74,7 @@ export default function ProductDetailPage() {
         <div className="mb-8">
             <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Catalog
+                Volver al Catálogo
             </Link>
         </div>
 
@@ -80,7 +86,7 @@ export default function ProductDetailPage() {
                      <ShoppingCart className="h-32 w-32 text-muted-foreground/20" />
                      <div className="absolute top-4 left-4">
                          {product.stock <= 5 && (
-                             <Badge variant="destructive" className="font-bold">Low Stock</Badge>
+                             <Badge variant="destructive" className="font-bold">Pocas Unidades</Badge>
                          )}
                      </div>
                 </div>
@@ -96,7 +102,7 @@ export default function ProductDetailPage() {
                 <div>
                      <div className="flex items-center justify-between mb-2">
                         <div className="flex gap-2">
-                             <Badge variant="outline" className="text-primary border-primary/20">New Arrival</Badge>
+                             <Badge variant="outline" className="text-primary border-primary/20">Novedad</Badge>
                              {product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice && (
                                 <Badge variant="destructive">
                                     {Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100)}% OFF
@@ -131,26 +137,55 @@ export default function ProductDetailPage() {
                                  <Star className="h-4 w-4 fill-current" />
                                  <Star className="h-4 w-4 fill-current text-muted" />
                              </div>
-                             <span className="text-muted-foreground">(24 reviews)</span>
+                             <span className="text-muted-foreground">(24 reseñas)</span>
                          </div>
                      </div>
                 </div>
 
                 <div className="prose prose-stone dark:prose-invert max-w-none">
                     <p className="text-lg leading-relaxed text-muted-foreground">
-                        {product.description || "No description available for this premium product. Experience quality and performance."}
+                        {product.description || "Descripción no disponible para este producto premium. Experimenta calidad y rendimiento."}
                     </p>
                 </div>
 
                 <div className="space-y-4 pt-6 border-t border-border">
                     <div className="flex items-center gap-4">
                          <div className="flex items-center gap-2 border rounded-full p-1 pr-4">
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full" disabled={true}>-</Button>
-                            <span className="font-bold w-4 text-center">1</span>
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full">+</Button>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-10 w-10 rounded-full" 
+                                disabled={quantity <= 1}
+                                onClick={() => setQuantity(q => q - 1)}
+                            >
+                                -
+                            </Button>
+                            <span className="font-bold w-4 text-center">{quantity}</span>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-10 w-10 rounded-full"
+                                onClick={() => setQuantity(q => q + 1)}
+                            >
+                                +
+                            </Button>
                          </div>
-                         <Button size="lg" className="flex-1 h-12 text-lg rounded-full shadow-lg shadow-primary/20">
-                             Add to Cart
+                         <Button 
+                            size="lg" 
+                            className="flex-1 h-12 text-lg rounded-full shadow-lg shadow-primary/20"
+                            onClick={() => {
+                                addItem({
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.basePrice,
+                                    salePrice: product.salePrice,
+                                    quantity: quantity,
+                                    // image: product.images?.[0]?.url 
+                                });
+                                toast.success("Agregado al carrito");
+                            }}
+                         >
+                             Agregar al Carrito
                          </Button>
                     </div>
                 </div>
@@ -159,15 +194,15 @@ export default function ProductDetailPage() {
                     <div className="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg">
                         <ShieldCheck className="h-5 w-5 text-primary" />
                         <div>
-                            <p className="font-semibold text-foreground">2 Year Warranty</p>
-                            <p>Full coverage guarantee</p>
+                            <p className="font-semibold text-foreground">Garantía de 2 Años</p>
+                            <p>Cobertura completa</p>
                         </div>
                     </div>
                      <div className="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg">
                         <Loader2 className="h-5 w-5 text-primary" />
                          <div>
-                            <p className="font-semibold text-foreground">Fast Delivery</p>
-                            <p>2-3 business days</p>
+                            <p className="font-semibold text-foreground">Envío Rápido</p>
+                            <p>2-3 días hábiles</p>
                         </div>
                     </div>
                     {product.sku && (

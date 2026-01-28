@@ -14,6 +14,7 @@ export const GET_PRODUCTS = gql`
           isActive
           stock: weight # Placeholder, adjusting based on Schema
           tags
+          category: categoryId
         }
       }
     }
@@ -109,6 +110,24 @@ export const GET_CATEGORY_BY_SLUG = gql`
         isActive
         stock: weight # Placeholder
         tags
+      }
+    }
+  }
+`;
+
+export const GET_CUSTOMER_ORDERS = gql`
+  query GetCustomerOrders($input: OrdersByCustomerInput!) {
+    ordersByCustomer(input: $input) {
+      id
+      orderNumber
+      totalAmount
+      status
+      createdAt
+      items {
+        productName
+        quantity
+        unitPrice
+        totalPrice
       }
     }
   }

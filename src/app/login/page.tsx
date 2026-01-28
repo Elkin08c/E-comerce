@@ -38,25 +38,30 @@ export default function CustomerLoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-          throw new Error(data.message || "Login failed");
+          throw new Error(data.message || "Error de inicio de sesión");
       }
 
       const token = data.accessToken || data.token || data.access_token;
       
       if (!token) {
-        throw new Error("No access token received from server");
+        throw new Error("No se recibió token del servidor");
       }
 
       localStorage.setItem("token", token);
-      if (data.customer?.firstName) {
-        localStorage.setItem("customerName", data.customer.firstName);
+      if (data.customer) {
+        if (data.customer.firstName) {
+            localStorage.setItem("customerName", data.customer.firstName);
+        }
+        if (data.customer.id) {
+            localStorage.setItem("customerId", data.customer.id);
+        }
       }
       router.push("/"); 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred");
+        setError("Ocurrió un error desconocido");
       }
     } finally {
       setLoading(false);
@@ -72,26 +77,26 @@ export default function CustomerLoginPage() {
               <ShoppingBag className="h-10 w-10 text-primary" />
             </Link>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password to access your account
+            Ingresa tu correo y contraseña para acceder
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="m@ejemplo.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
@@ -107,15 +112,15 @@ export default function CustomerLoginPage() {
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-              Sign In
+              Ingresar
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
            <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            ¿No tienes cuenta?{" "}
             <Link href="/register" className="text-primary hover:underline">
-              Sign up
+              Regístrate
             </Link>
           </p>
         </CardFooter>

@@ -19,7 +19,28 @@ interface ProductCardProps {
   product: Product;
 }
 
+import { useCartStore } from "@/store/cart";
+import { toast } from "sonner";
+
 export function ProductCard({ product }: ProductCardProps) {
+  const { addItem } = useCartStore();
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.basePrice,
+      salePrice: product.salePrice,
+      quantity: 1,
+      // image: product.mainImage // TODO: Map real image
+    });
+    toast.success("Agregado al carrito", {
+      description: `${product.name} se ha agregado a tu carrito.`
+    });
+  };
+
   const hasDiscount = product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice;
   const discountPercent = hasDiscount && product.salePrice 
     ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100) 
@@ -32,7 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
             {product.stock <= 5 && product.stock > 0 && (
               <span className="bg-orange-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm w-fit">
-                Low Stock
+                Pocas Unidades
               </span>
             )}
             {hasDiscount && (
@@ -48,7 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Quick Actions Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-            <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+            <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75" onClick={handleAddToCart}>
               <ShoppingBag className="h-4 w-4" />
             </Button>
             <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
@@ -63,7 +84,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-base font-medium line-clamp-1">{product.name}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">Product</p>
+            <p className="text-sm text-muted-foreground mt-1">Producto</p>
           </div>
           <div className="flex flex-col items-end">
             {hasDiscount && product.salePrice ? (

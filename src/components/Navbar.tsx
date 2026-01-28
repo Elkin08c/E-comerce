@@ -17,11 +17,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
+import { useCartStore } from "@/store/cart";
+import { CartSheet } from "@/components/cart/CartSheet";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const { toggleCart, items } = useCartStore();
+  const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const { data, loading } = useQuery<any>(GET_CATEGORIES);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,7 +67,7 @@ export default function Navbar() {
           <SheetContent side="left">
             <nav className="flex flex-col gap-4 mt-8">
               <Link href="/" className="text-lg font-semibold">
-                Home
+                Inicio
               </Link>
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -101,27 +115,33 @@ export default function Navbar() {
         <div className="flex-1" />
 
         {/* Search Bar - Hidden on small mobile */}
-        <div className="hidden md:flex items-center relative max-w-[200px] lg:max-w-[300px] w-full mr-4">
+        <form onSubmit={handleSearch} className="hidden md:flex items-center relative max-w-[200px] lg:max-w-[300px] w-full mr-4">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search products..."
+            placeholder="Buscar productos..."
             className="pl-9 h-9 bg-secondary/50 border-transparent focus-visible:bg-background focus-visible:border-input transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
+          <Button variant="ghost" size="icon" className="relative" onClick={toggleCart}>
             <Search className="h-5 w-5 md:hidden" />
             <ShoppingCart className="h-5 w-5 hidden md:block" />
-            <span className="sr-only">Cart</span>
-            {/* Hardcoded Badge for visual */}
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-primary rounded-full md:hidden" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center hidden md:flex">
-              2
-            </span>
+            <span className="sr-only">Carrito</span>
+            {cartCount > 0 && (
+                <>
+                    <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-primary rounded-full md:hidden" />
+                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center hidden md:flex">
+                    {cartCount}
+                    </span>
+                </>
+            )}
           </Button>
+          <CartSheet />
 
           {isAuthenticated ? (
             <DropdownMenu>
@@ -134,31 +154,33 @@ export default function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>
-                    My Account
+                    Mi Cuenta
                     <div className="text-xs font-normal text-muted-foreground">
                         {localStorage.getItem("customerName")}
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Orders</DropdownMenuItem>
+                <DropdownMenuItem>Perfil</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/account/orders" className="w-full cursor-pointer">Mis Pedidos</Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => {
                     localStorage.removeItem("token");
                     localStorage.removeItem("customerName");
                     window.location.reload();
                 }}>
-                    Log out
+                    Cerrar Sesión
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
              <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                    <Link href="/login">Log in</Link>
+                    <Link href="/login">Ingresar</Link>
                 </Button>
                 <Button size="sm" asChild>
-                    <Link href="/register">Sign up</Link>
+                    <Link href="/register">Registrarse</Link>
                 </Button>
              </div>
           )}

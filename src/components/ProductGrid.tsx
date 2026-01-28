@@ -25,7 +25,7 @@ export default function ProductGrid() {
   if (error) {
     return (
       <div className="text-center p-12 text-red-500">
-        Error loading products: {error.message}
+        Error al cargar productos: {error.message}
       </div>
     );
   }
@@ -35,7 +35,7 @@ export default function ProductGrid() {
   if (products.length === 0) {
     return (
       <div className="text-center p-12 text-muted-foreground">
-        No products found.
+        No se encontraron productos.
       </div>
     );
   }

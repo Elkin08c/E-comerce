@@ -14,11 +14,17 @@ const authMiddleware = new ApolloLink((operation, forward) => {
     token = null;
   }
   
-  operation.setContext({
+  const headers: Record<string, string> = {};
+  if (token && token !== "null" && token !== "undefined") {
+      headers["Authorization"] = `Bearer ${token}`;
+  }
+  
+  operation.setContext((prevContext: any) => ({
     headers: {
-      authorization: token ? `Bearer ${token}` : "",
+      ...prevContext.headers,
+      ...headers
     }
-  });
+  }));
 
   return forward(operation);
 });

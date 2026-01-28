@@ -47,7 +47,7 @@ export default function CustomerRegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-          throw new Error(data.message || "Registration failed");
+          throw new Error(data.message || "Fallo en el registro");
       }
 
       // Redirect to login with success message
@@ -56,7 +56,7 @@ export default function CustomerRegisterPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred");
+        setError("Ocurrió un error desconocido");
       }
     } finally {
       setLoading(false);
@@ -72,16 +72,16 @@ export default function CustomerRegisterPage() {
               <ShoppingBag className="h-10 w-10 text-primary" />
             </Link>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Crear una cuenta</CardTitle>
           <CardDescription className="text-center">
-            Enter your information to create an account
+            Ingresa tus datos para crear una cuenta
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="firstName">First name</Label>
+                    <Label htmlFor="firstName">Nombre</Label>
                     <Input
                         id="firstName"
                         name="firstName"
@@ -91,7 +91,7 @@ export default function CustomerRegisterPage() {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="lastName">Last name</Label>
+                    <Label htmlFor="lastName">Apellido</Label>
                     <Input
                         id="lastName"
                         name="lastName"
@@ -102,7 +102,7 @@ export default function CustomerRegisterPage() {
                 </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input
                 id="email"
                 name="email"
@@ -113,7 +113,7 @@ export default function CustomerRegisterPage() {
               />
             </div>
              <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Teléfono</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -123,7 +123,7 @@ export default function CustomerRegisterPage() {
               />
             </div>
              <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 name="password"
@@ -142,15 +142,15 @@ export default function CustomerRegisterPage() {
             
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
-              Sign Up
+              Registrarse
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
            <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
+            ¿Ya tienes cuenta?{" "}
             <Link href="/login" className="text-primary hover:underline">
-              Sign in
+              Ingresar
             </Link>
           </p>
         </CardFooter>

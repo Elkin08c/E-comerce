@@ -19,9 +19,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand Column */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold tracking-tight">LuxeStore<span className="text-primary">.</span></h3>
+            <h3 className="text-2xl font-bold tracking-tight">COAVPRO<span className="text-primary">.</span></h3>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              Elevating your lifestyle with curated premium products. Experience quality and design in every detail.
+              Tu destino experto en tecnología en Cuenca. Encuentra los mejores componentes, laptops y accesorios con garantía local.
             </p>
             <div className="flex gap-4 pt-2">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
@@ -41,7 +41,7 @@ export default function Footer() {
 
           {/* Shop Column */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Shop</h4>
+            <h4 className="font-semibold text-lg mb-6">Tienda</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               {categories.slice(0, 6).map((cat: any) => (
                 <li key={cat.id}>
@@ -51,31 +51,31 @@ export default function Footer() {
                 </li>
               ))}
               {categories.length === 0 && (
-                <li>Scanning catalog...</li>
+                <li>Cargando catálogo...</li>
               )}
             </ul>
           </div>
 
           {/* Support Column */}
           <div>
-            <h4 className="font-semibold text-lg mb-6">Support</h4>
+            <h4 className="font-semibold text-lg mb-6">Soporte</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link href="/faq" className="hover:text-primary transition-colors">FAQs</Link></li>
-              <li><Link href="/shipping" className="hover:text-primary transition-colors">Shipping & Returns</Link></li>
-              <li><Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/contact" className="hover:text-primary transition-colors">Contáctanos</Link></li>
+              <li><Link href="/faq" className="hover:text-primary transition-colors">Preguntas Frecuentes</Link></li>
+              <li><Link href="/shipping" className="hover:text-primary transition-colors">Envíos y Devoluciones</Link></li>
+              <li><Link href="/terms" className="hover:text-primary transition-colors">Términos de Servicio</Link></li>
+              <li><Link href="/privacy" className="hover:text-primary transition-colors">Política de Privacidad</Link></li>
             </ul>
           </div>
 
           {/* Newsletter Column */}
           <div>
-             <h4 className="font-semibold text-lg mb-6">Stay Updated</h4>
+             <h4 className="font-semibold text-lg mb-6">Mantente Informado</h4>
              <p className="text-muted-foreground text-sm mb-4">
-                Subscribe to our newsletter for exclusive offers and updates.
+                Suscríbete a nuestro boletín para ofertas exclusivas y novedades.
              </p>
              <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                <Input type="email" placeholder="Your email address" className="bg-secondary/50 border-0 focus-visible:ring-1" />
+                <Input type="email" placeholder="Tu correo electrónico" className="bg-secondary/50 border-0 focus-visible:ring-1" />
                 <Button size="icon" type="submit">
                     <Send className="h-4 w-4" />
                 </Button>
@@ -84,11 +84,11 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-            <p>&copy; {currentYear} LuxeStore Inc. All rights reserved.</p>
+            <p>&copy; {currentYear} COAVPRO. Todos los derechos reservados.</p>
             <div className="flex gap-6">
-                <Link href="#" className="hover:text-foreground transition-colors">Privacy</Link>
-                <Link href="#" className="hover:text-foreground transition-colors">Terms</Link>
-                <Link href="#" className="hover:text-foreground transition-colors">Sitemap</Link>
+                <Link href="#" className="hover:text-foreground transition-colors">Privacidad</Link>
+                <Link href="#" className="hover:text-foreground transition-colors">Términos</Link>
+                <Link href="#" className="hover:text-foreground transition-colors">Mapa del sitio</Link>
             </div>
         </div>
       </div>
