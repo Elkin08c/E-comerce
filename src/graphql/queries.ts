@@ -11,10 +11,10 @@ export const GET_PRODUCTS = gql`
           sku
           basePrice
           salePrice
+          stock
           isActive
-          stock: weight # Placeholder, adjusting based on Schema
           tags
-          category: categoryId
+          categoryId
         }
       }
     }
@@ -28,11 +28,29 @@ export const GET_PRODUCT = gql`
       name
       description
       basePrice
-      salePrice
-      sku
-      stock: weight # Placeholder
+      stock
+      isActive
       tags
-      category: categoryId
+      categoryId
+      metaTitle
+      metaDescription
+      status
+      variants {
+        id
+        name
+        sku
+        price
+        salePrice
+        stock
+        isActive
+        attributes {
+          color
+          storage
+          size
+          material
+          other
+        }
+      }
     }
   }
 `;
@@ -107,8 +125,8 @@ export const GET_CATEGORY_BY_SLUG = gql`
         sku
         basePrice
         salePrice
+        stock
         isActive
-        stock: weight # Placeholder
         tags
       }
     }
@@ -132,3 +150,43 @@ export const GET_CUSTOMER_ORDERS = gql`
     }
   }
 `;
+
+export const GET_SHIPPING_METHODS = gql`
+  query GetShippingMethods {
+    shippingMethods: findAllShippingMethods {
+      name
+      type
+      basePrice
+      estimatedDays
+    }
+  }
+`;
+
+export const GET_SHIPPING_ZONES = gql`
+  query GetShippingZones {
+    shippingZones: findAllShippingZones {
+      id
+      name
+    }
+  }
+`;
+
+export const GET_CUSTOMER_ADDRESSES = gql`
+  query GetCustomerAddresses {
+    customersAddresses {
+      totalCount
+      edges {
+        node {
+          id
+          street
+          city
+          state
+          zipCode
+          country
+          isDefault
+        }
+      }
+    }
+  }
+`;
+

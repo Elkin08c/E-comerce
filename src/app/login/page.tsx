@@ -7,6 +7,8 @@ import { Loader2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authService } from "@/lib/services/auth.service";
+import { useCartStore } from "@/store/cart";
 import {
   Card,
   CardContent,
@@ -29,17 +31,7 @@ export default function CustomerLoginPage() {
     setError("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/customer/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-          throw new Error(data.message || "Error de inicio de sesión");
-      }
+      const data = await authService.login({ email, password });
 
       const token = data.accessToken || data.token || data.access_token;
       
@@ -48,6 +40,10 @@ export default function CustomerLoginPage() {
       }
 
       localStorage.setItem("token", token);
+      
+      // Sync cart after login
+      useCartStore.getState().fetchCart();
+
       if (data.customer) {
         if (data.customer.firstName) {
             localStorage.setItem("customerName", data.customer.firstName);
