@@ -56,8 +56,11 @@ export function Sidebar() {
       </div>
       <div className="border-t border-gray-800 p-4">
         <button
-          onClick={() => {
-            localStorage.removeItem("token");
+          onClick={async () => {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, { 
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            }).catch(() => {});
             window.location.href = "/admin/auth/login";
           }}
           className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"

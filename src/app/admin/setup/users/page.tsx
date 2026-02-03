@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -11,18 +12,8 @@ export default function UsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
-        if (!res.ok) {
-           if (res.status === 401) throw new Error("Unauthorized");
-           throw new Error("Failed to fetch users");
-        }
-        const data = await res.json();
-        setUsers(data.data || data); // Adjust based on pagination response structure
+        const data = await apiClient<any[]>("/users");
+        setUsers(data || []);
       } catch (err: unknown) {
         if (err instanceof Error) setError(err.message);
         else setError("Unknown error");

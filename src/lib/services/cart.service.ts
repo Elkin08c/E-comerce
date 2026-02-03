@@ -14,25 +14,22 @@ export const cartService = {
     return apiClient<ShoppingCart>("/shopping-carts/my-active-cart");
   },
 
-  addItem: async (cartId: string, itemData: { productId: string; variantId?: string; quantity: number }): Promise<any> => {
-    return apiClient(`/shopping-carts-items`, {
+  addItem: async (cartId: string, itemData: { productId: string; variantId?: string; comboId?: string; quantity: number }): Promise<any> => {
+    return apiClient(`/shopping-carts-items/${cartId}/items`, {
       method: "POST",
-      body: JSON.stringify({
-        shoppingCartId: cartId,
-        ...itemData
-      }),
+      body: JSON.stringify(itemData),
     });
   },
 
-  updateItem: async (itemId: string, quantity: number): Promise<any> => {
-    return apiClient(`/shopping-carts-items/${itemId}`, {
+  updateItem: async (cartId: string, itemId: string, quantity: number): Promise<any> => {
+    return apiClient(`/shopping-carts-items/${cartId}/items/${itemId}`, {
       method: "PATCH",
       body: JSON.stringify({ quantity }),
     });
   },
 
-  removeItem: async (itemId: string): Promise<any> => {
-    return apiClient(`/shopping-carts-items/${itemId}`, {
+  removeItem: async (cartId: string, itemId: string): Promise<any> => {
+    return apiClient(`/shopping-carts-items/${cartId}/items/${itemId}`, {
       method: "DELETE",
     });
   },

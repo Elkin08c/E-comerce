@@ -1,33 +1,37 @@
 import { apiClient } from "../api-client";
 
-export interface LoginResponse {
+export interface UserLoginResponse {
   accessToken: string;
-  token?: string;
-  access_token?: string;
-  customer?: {
+  refreshToken: string;
+  user: {
     id: string;
-    firstName?: string;
-    lastName?: string;
+    name: string;
     email: string;
+    role: string;
   };
 }
 
 export const authService = {
-  login: async (credentials: Record<string, string>): Promise<LoginResponse> => {
-    return apiClient<LoginResponse>("/customer/auth/login", {
+  login: async (credentials: Record<string, string>): Promise<UserLoginResponse> => {
+    return apiClient<UserLoginResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify(credentials),
     });
   },
   
-  register: async (data: Record<string, any>): Promise<any> => {
-    return apiClient("/customer/auth/register", {
+  getProfile: async (): Promise<any> => {
+    return apiClient("/auth/profile");
+  },
+
+  logout: async (): Promise<void> => {
+    return apiClient("/auth/logout", {
       method: "POST",
-      body: JSON.stringify(data),
     });
   },
 
-  getProfile: async (): Promise<any> => {
-    return apiClient("/customer/auth/profile");
+  refreshToken: async (): Promise<any> => {
+    return apiClient("/auth/refresh-token", {
+      method: "POST",
+    });
   }
 };

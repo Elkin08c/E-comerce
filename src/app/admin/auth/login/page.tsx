@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, Loader2 } from "lucide-react";
+import { authService } from "@/lib/services/auth.service";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,26 +19,10 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.message || "Login failed");
+      const data = await authService.login({ email, password });
+      if (data.accessToken) {
+        localStorage.setItem("token", data.accessToken);
       }
-
-      const data = await res.json();
-      
-      const token = data.accessToken || data.token || data.access_token;
-      
-      if (!token) {
-        throw new Error("No access token received from server");
-      }
-
-      localStorage.setItem("token", token);
       router.push("/admin");
     } catch (err: unknown) {
       if (err instanceof Error) {

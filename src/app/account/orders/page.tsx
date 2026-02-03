@@ -1,4 +1,5 @@
 "use client";
+import { authService } from "@/lib/services/auth.service";
 
 import { useQuery } from "@apollo/client/react";
 import { GET_CUSTOMER_ORDERS } from "@/graphql/queries";
@@ -25,17 +26,16 @@ export default function MyOrdersPage() {
   const [customerId, setCustomerId] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const storedCustomerId = localStorage.getItem("customerId");
     
-    if (!token) {
+    // We rely on the query to fail if not authorized, or we can check profile
+    authService.getProfile().catch(() => {
       router.push("/login");
-      return;
-    }
+    });
 
     if (storedCustomerId) {
       setCustomerId(storedCustomerId);
-    } 
+    }
     // If no customerId but token exists (e.g. old login), maybe trigger a profile fetch or ask to relogin
     // For now we assume customerId is there if logged in via new flow
   }, [router]);

@@ -36,9 +36,6 @@ export const useCartStore = create<CartStore>()(
       cartId: null,
       
       fetchCart: async () => {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        
         try {
           const cart = await cartService.getOrCreateCart();
           const mappedItems = cart.items.map((item: any) => ({
@@ -56,12 +53,10 @@ export const useCartStore = create<CartStore>()(
       },
 
       addItem: async (newItem) => {
-        const token = localStorage.getItem("token");
         const state = get();
         const existingItem = state.items.find((item) => item.id === newItem.id);
 
-        if (token) {
-          try {
+        try {
             let cartId = state.cartId;
             if (!cartId) {
               const cart = await cartService.getOrCreateCart();
@@ -70,7 +65,7 @@ export const useCartStore = create<CartStore>()(
             }
 
             if (existingItem && existingItem.serverItemId) {
-              await cartService.updateItem(existingItem.serverItemId, existingItem.quantity + 1);
+              await cartService.updateItem(cartId, existingItem.serverItemId, existingItem.quantity + 1);
             } else {
               const res = await cartService.addItem(cartId, {
                 productId: newItem.id,
@@ -81,7 +76,6 @@ export const useCartStore = create<CartStore>()(
           } catch (error) {
             console.error("Error adding item to server cart:", error);
           }
-        }
 
         set((state) => {
           if (existingItem) {
@@ -99,13 +93,12 @@ export const useCartStore = create<CartStore>()(
       },
 
       removeItem: async (id) => {
-        const token = localStorage.getItem("token");
         const state = get();
         const itemToRemove = state.items.find(item => item.id === id);
 
-        if (token && itemToRemove?.serverItemId) {
+        if (state.cartId && itemToRemove?.serverItemId) {
           try {
-            await cartService.removeItem(itemToRemove.serverItemId);
+            await cartService.removeItem(state.cartId, itemToRemove.serverItemId);
           } catch (error) {
             console.error("Error removing item from server cart:", error);
           }
@@ -117,14 +110,13 @@ export const useCartStore = create<CartStore>()(
       },
 
       updateQuantity: async (id, quantity) => {
-        const token = localStorage.getItem("token");
         const state = get();
         const itemToUpdate = state.items.find(item => item.id === id);
         const newQuantity = Math.max(1, quantity);
 
-        if (token && itemToUpdate?.serverItemId) {
+        if (state.cartId && itemToUpdate?.serverItemId) {
           try {
-            await cartService.updateItem(itemToUpdate.serverItemId, newQuantity);
+            await cartService.updateItem(state.cartId, itemToUpdate.serverItemId, newQuantity);
           } catch (error) {
             console.error("Error updating item quantity on server:", error);
           }
@@ -138,9 +130,8 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: async () => {
-        const token = localStorage.getItem("token");
         const state = get();
-        if (token && state.cartId) {
+        if (state.cartId) {
           try {
             await cartService.clearCart(state.cartId);
           } catch (error) {

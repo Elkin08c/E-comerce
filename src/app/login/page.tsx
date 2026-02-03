@@ -7,7 +7,7 @@ import { Loader2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authService } from "@/lib/services/auth.service";
+import { customerAuthService } from "@/lib/services/customer-auth.service";
 import { useCartStore } from "@/store/cart";
 import {
   Card,
@@ -31,16 +31,13 @@ export default function CustomerLoginPage() {
     setError("");
 
     try {
-      const data = await authService.login({ email, password });
+      const data = await customerAuthService.login({ email, password });
 
-      const token = data.accessToken || data.token || data.access_token;
-      
-      if (!token) {
-        throw new Error("No se recibió token del servidor");
+      // Guardar token para compatibilidad con el backend original
+      if (data.accessToken) {
+        localStorage.setItem("token", data.accessToken);
       }
 
-      localStorage.setItem("token", token);
-      
       // Sync cart after login
       useCartStore.getState().fetchCart();
 

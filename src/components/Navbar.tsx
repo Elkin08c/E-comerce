@@ -7,6 +7,7 @@ import { GET_CATEGORIES } from "@/graphql/queries";
 import { ShoppingBag, Search, User, Menu, ShoppingCart, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { customerAuthService } from "@/lib/services/customer-auth.service";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +43,12 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener("scroll", handleScroll);
-    setIsAuthenticated(!!localStorage.getItem("token"));
+    
+    // Check session on mount
+    customerAuthService.getProfile()
+      .then(() => setIsAuthenticated(true))
+      .catch(() => setIsAuthenticated(false));
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -86,7 +92,6 @@ export default function Navbar() {
           </SheetContent>
         </Sheet>
 
-        {/* Logo */}
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-6 shrink-0">
           <Image 
@@ -165,9 +170,10 @@ export default function Navbar() {
                     <Link href="/account/orders" className="w-full cursor-pointer">Mis Pedidos</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => {
-                    localStorage.removeItem("token");
+                <DropdownMenuItem onClick={async () => {
+                    await customerAuthService.logout();
                     localStorage.removeItem("customerName");
+                    localStorage.removeItem("token");
                     window.location.reload();
                 }}>
                     Cerrar Sesión
