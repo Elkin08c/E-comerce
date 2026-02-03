@@ -9,7 +9,8 @@ import {
   Package, 
   ShoppingCart,
   LayoutDashboard, 
-  List
+  List,
+  Truck
 } from "lucide-react";
 
 const navigation = [
@@ -18,6 +19,7 @@ const navigation = [
   { name: "Categories", href: "/admin/catalog/categories", icon: List },
   { name: "Orders", href: "/admin/sales/orders", icon: ShoppingCart },
   { name: "Customers", href: "/admin/sales/customers", icon: Users },
+  { name: "Logistics", href: "/admin/logistics", icon: Truck },
   { name: "Users", href: "/admin/setup/users", icon: Settings },
 ];
 
