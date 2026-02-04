@@ -27,10 +27,6 @@ export const customerAuthService = {
     });
   },
 
-  getProfile: async (): Promise<any> => {
-    return apiClient("/customer/auth/profile");
-  },
-
   logout: async (): Promise<void> => {
     return apiClient("/customer/auth/logout", {
       method: "POST",

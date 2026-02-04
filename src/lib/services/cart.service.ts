@@ -14,6 +14,10 @@ export const cartService = {
     return apiClient<ShoppingCart>("/shopping-carts/my-active-cart");
   },
 
+  getCartWithItems: async (cartId: string): Promise<ShoppingCart> => {
+    return apiClient<ShoppingCart>(`/shopping-carts/${cartId}/with-items`);
+  },
+
   addItem: async (cartId: string, itemData: { productId: string; variantId?: string; comboId?: string; quantity: number }): Promise<any> => {
     return apiClient(`/shopping-carts-items/${cartId}/items`, {
       method: "POST",
@@ -42,5 +46,10 @@ export const cartService = {
 
   getCartTotals: async (cartId: string): Promise<any> => {
     return apiClient(`/shopping-carts/${cartId}/totals`);
+  },
+
+  validateStock: async (cartId: string): Promise<any> => {
+    return apiClient(`/shopping-carts/${cartId}/validate-stock`);
   }
 };
+

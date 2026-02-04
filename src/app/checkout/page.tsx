@@ -6,6 +6,7 @@ import { useQuery, useMutation } from "@apollo/client/react";
 import { GET_CUSTOMER_ADDRESSES, GET_SHIPPING_METHODS, GET_SHIPPING_ZONES } from "@/graphql/queries";
 import { CHECKOUT } from "@/graphql/mutations";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,24 @@ import { paymentProvidersService } from "@/lib/services/payment-providers.servic
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clearCart, cartId } = useCartStore();
+  const { items, subtotal, clearCart, cartId, fetchCart } = useCartStore();
+  const { isAuthenticated, user } = useAuthStore();
+  
+  // Verificar autenticación al cargar la página
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Debes iniciar sesión para continuar con la compra");
+      // Guardar la ruta actual para redirigir después del login
+      sessionStorage.setItem("redirectAfterLogin", "/checkout");
+      router.push("/login");
+      return;
+    }
+
+    // Si está autenticado, sincronizar carrito con el servidor
+    if (!cartId) {
+      fetchCart();
+    }
+  }, [isAuthenticated, router, cartId, fetchCart]);
   
   const { data: addrData, loading: addrLoading } = useQuery<any>(GET_CUSTOMER_ADDRESSES);
   const [checkout, { loading: processing }] = useMutation(CHECKOUT);
@@ -42,6 +60,8 @@ export default function CheckoutPage() {
 
   // Cargar zonas al montar el componente
   useEffect(() => {
+    if (!isAuthenticated) return; // No cargar si no está autenticado
+    
     const fetchZones = async () => {
       try {
         const zonesData = await logisticsService.getZones();
@@ -53,7 +73,7 @@ export default function CheckoutPage() {
       }
     };
     fetchZones();
-  }, []);
+  }, [isAuthenticated]);
 
   // Cargar métodos cuando cambia la zona
   useEffect(() => {
@@ -93,10 +113,10 @@ export default function CheckoutPage() {
   }, [selectedZone, zones]);
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && isAuthenticated) {
       router.push("/");
     }
-  }, [items, router]);
+  }, [items, router, isAuthenticated]);
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress || !selectedShipping || !selectedZone || !selectedPayment) {
@@ -132,19 +152,36 @@ export default function CheckoutPage() {
         if (selectedPayment === "PAYPHONE") {
            const init = await paymentProvidersService.initializePayphone({
              orderId,
-             amount: subtotal(),
+             amount: Math.round(subtotal() * 100), // Convertir a centavos para backend
              tax: 0
            });
-           window.location.href = init.responseUrl;
+           
+           // Si el backend devuelve una URL (a veces lo hace si es redirección)
+           // de lo contrario, aquí se dispararía el SDK de Payphone
+           // Por ahora, como es una transición, redirigimos si existe o informamos éxito
+           toast.success("Pago con Payphone iniciado. Redirigiendo...");
+           // @ts-ignore - Dependiendo de la implementación del backend
+           if (init.responseUrl) {
+             // @ts-ignore
+             window.location.href = init.responseUrl;
+           } else {
+             router.push(`/account/orders`);
+           }
            return;
         }
 
         if (selectedPayment === "DEUNA") {
            const init = await paymentProvidersService.initializeDeuna({
              orderId,
-             amount: subtotal()
+             format: "2" // QR + Deeplink
            });
-           window.location.href = init.checkoutUrl;
+           
+           if (init.deeplink) {
+             window.location.href = init.deeplink;
+           } else {
+             toast.info("Solicitud de Deuna creada, finaliza el pago en tu app.");
+             router.push(`/account/orders`);
+           }
            return;
         }
 
@@ -266,7 +303,7 @@ export default function CheckoutPage() {
                         <div className="font-semibold">{method.name}</div>
                         <div className="text-sm text-muted-foreground">{method.description}</div>
                       </div>
-                      <div className="font-bold">${method.baseCost.toFixed(2)}</div>
+                      <div className="font-bold">${Number(method.baseCost).toFixed(2)}</div>
                     </Label>
                   </div>
                 ))}
@@ -311,14 +348,14 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
                     <span>{item.name} x {item.quantity}</span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>${(Number(item.price) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
               <Separator />
               <div className="flex justify-between font-medium">
                 <span>Subtotal</span>
-                <span>${subtotal().toFixed(2)}</span>
+                <span>${Number(subtotal()).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground text-sm">
                 <span>Envío</span>
@@ -327,7 +364,7 @@ export default function CheckoutPage() {
               <Separator />
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
-                <span>${subtotal().toFixed(2)}</span>
+                <span>${Number(subtotal()).toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>

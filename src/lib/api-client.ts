@@ -16,12 +16,9 @@ export const apiClient = async <T>(
     Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
   }
 
-  // Recuperar token para compatibilidad con el backend original (restaurado)
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
+  // No se requiere recuperar token de localStorage, el backend usa cookies HttpOnly
   const defaultHeaders: HeadersInit = {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 
   const config: RequestInit = {
@@ -34,32 +31,43 @@ export const apiClient = async <T>(
     },
   };
 
-  const response = await fetch(url.toString(), config);
+  try {
+    const response = await fetch(url.toString(), config);
 
-  if (response.status === 401 && typeof window !== "undefined") {
-    const isAdmin = window.location.pathname.startsWith("/admin");
-    const loginPath = isAdmin ? "/admin/auth/login" : "/login";
+    if (response.status === 401 && typeof window !== "undefined") {
+      const isAdmin = window.location.pathname.startsWith("/admin");
+      const loginPath = isAdmin ? "/admin/auth/login" : "/login";
+      
+      // Evitar loop si ya estamos en login
+      if (!window.location.pathname.includes(loginPath)) {
+        window.location.href = loginPath;
+      }
+    }
+
+    let data: any = null;
+    const contentType = response.headers.get("content-type");
     
-    // Evitar loop si ya estamos en login
-    if (!window.location.pathname.includes(loginPath)) {
-      // localStorage.removeItem("token"); // Opcional: limpiar token corrupto
-      window.location.href = loginPath;
+    if (response.status !== 204 && contentType && contentType.includes("application/json")) {
+      const text = await response.text();
+      if (text) {
+        data = JSON.parse(text);
+      }
     }
-  }
 
-  let data: any = null;
-  const contentType = response.headers.get("content-type");
-  
-  if (response.status !== 204 && contentType && contentType.includes("application/json")) {
-    const text = await response.text();
-    if (text) {
-      data = JSON.parse(text);
+    if (!response.ok) {
+      const errorMessage = data?.message || data?.error || `Error ${response.status}: ${response.statusText}`;
+      console.error(`API Error [${endpoint}]:`, errorMessage);
+      throw new Error(errorMessage);
     }
-  }
 
-  if (!response.ok) {
-    throw new Error(data?.message || "Error en la petición a la API");
+    return data;
+  } catch (error) {
+    // Si es un error de red o fetch
+    if (error instanceof TypeError) {
+      console.error(`Network Error [${endpoint}]:`, error.message);
+      throw new Error("Error de conexión con el servidor. Verifica que el backend esté corriendo.");
+    }
+    // Re-lanzar otros errores
+    throw error;
   }
-
-  return data;
 };

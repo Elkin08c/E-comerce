@@ -57,7 +57,7 @@ export default function CatalogPage() {
       }
 
       // 2. Price Filter
-      const price = product.salePrice || product.basePrice;
+      const price = product.salePrice || product.basePrice || 0;
       if (price < priceRange[0] || price > priceRange[1]) {
         return false;
       }

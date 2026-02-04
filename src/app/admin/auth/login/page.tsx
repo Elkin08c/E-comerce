@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, Loader2 } from "lucide-react";
 import { authService } from "@/lib/services/auth.service";
+import { useAuthStore } from "@/store/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,8 +22,13 @@ export default function LoginPage() {
 
     try {
       const data = await authService.login({ email, password });
-      if (data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
+      if (data.user) {
+        setUser({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+        });
       }
       router.push("/admin");
     } catch (err: unknown) {

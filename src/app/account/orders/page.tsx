@@ -21,24 +21,26 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
+import { useAuthStore } from "@/store/auth";
+
 export default function MyOrdersPage() {
   const router = useRouter();
-  const [customerId, setCustomerId] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const storedCustomerId = localStorage.getItem("customerId");
-    
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
     // We rely on the query to fail if not authorized, or we can check profile
     authService.getProfile().catch(() => {
       router.push("/login");
     });
+  }, [router, isAuthenticated]);
 
-    if (storedCustomerId) {
-      setCustomerId(storedCustomerId);
-    }
-    // If no customerId but token exists (e.g. old login), maybe trigger a profile fetch or ask to relogin
-    // For now we assume customerId is there if logged in via new flow
-  }, [router]);
+  const customerId = user?.id;
 
   const { data, loading, error } = useQuery<any>(GET_CUSTOMER_ORDERS, {
     variables: { 

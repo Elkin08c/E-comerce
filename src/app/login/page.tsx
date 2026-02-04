@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { customerAuthService } from "@/lib/services/customer-auth.service";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 import {
   Card,
   CardContent,
@@ -24,6 +25,7 @@ export default function CustomerLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,25 +33,30 @@ export default function CustomerLoginPage() {
     setError("");
 
     try {
-      const data = await customerAuthService.login({ email, password });
+       const data = await customerAuthService.login({ email, password });
 
-      // Guardar token para compatibilidad con el backend original
-      if (data.accessToken) {
-        localStorage.setItem("token", data.accessToken);
-      }
-
-      // Sync cart after login
-      useCartStore.getState().fetchCart();
-
+      // Primero actualizar el estado de autenticación
       if (data.customer) {
-        if (data.customer.firstName) {
-            localStorage.setItem("customerName", data.customer.firstName);
-        }
-        if (data.customer.id) {
-            localStorage.setItem("customerId", data.customer.id);
-        }
+        setUser({
+          id: data.customer.id,
+          name: `${data.customer.firstName} ${data.customer.lastName}`.trim(),
+          email: data.customer.email,
+          role: data.customer.role,
+        });
       }
-      router.push("/"); 
+
+      // Luego sincronizar el carrito local con el servidor
+      // Esto fusionará los items locales con el carrito del servidor
+      await useCartStore.getState().syncLocalCartToServer();
+
+      // Verificar si hay una redirección guardada (ej: desde checkout)
+      const redirectTo = sessionStorage.getItem("redirectAfterLogin");
+      if (redirectTo) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        router.push(redirectTo);
+      } else {
+        router.push("/"); 
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

@@ -9,9 +9,11 @@ export const GET_PRODUCTS = gql`
           id
           name
           sku
-          basePrice
           salePrice
-          stock
+          costPrice
+          status
+          hasVariants
+          isFeatured
           isActive
           tags
           categoryId
@@ -27,21 +29,22 @@ export const GET_PRODUCT = gql`
       id
       name
       description
-      basePrice
-      stock
+      salePrice
+      costPrice
+      status
+      hasVariants
+      isFeatured
       isActive
       tags
       categoryId
       metaTitle
       metaDescription
-      status
       variants {
         id
         name
         sku
-        price
         salePrice
-        stock
+        costPrice
         isActive
         attributes {
           color
@@ -64,9 +67,19 @@ export const GET_CATEGORIES = gql`
           id
           name
           slug
+          description
           isActive
+          isFeatured
           products {
-             id
+            id
+            name
+            slug
+            salePrice
+            costPrice
+            status
+            hasVariants
+            isFeatured
+            isActive
           }
         }
       }
@@ -118,14 +131,18 @@ export const GET_CATEGORY_BY_SLUG = gql`
     categoriesBySlug(slug: $slug) {
       id
       name
+      slug
       description
       products {
         id
         name
+        slug
         sku
-        basePrice
         salePrice
-        stock
+        costPrice
+        status
+        hasVariants
+        isFeatured
         isActive
         tags
       }
@@ -138,11 +155,21 @@ export const GET_CUSTOMER_ORDERS = gql`
     ordersByCustomer(input: $input) {
       id
       orderNumber
-      totalAmount
       status
+      paymentStatus
+      subtotal
+      shippingAmount
+      discountAmount
+      referralDiscount
+      paymentDiscount
+      shippingDiscount
+      couponDiscount
+      campaignDiscount
+      totalAmount
       createdAt
       items {
         productName
+        variantName
         quantity
         unitPrice
         totalPrice
@@ -151,25 +178,31 @@ export const GET_CUSTOMER_ORDERS = gql`
   }
 `;
 
-export const GET_SHIPPING_METHODS = gql`
-  query GetShippingMethods {
-    shippingMethods: findAllShippingMethods {
-      name
-      type
-      basePrice
-      estimatedDays
-    }
-  }
-`;
+// ⚠️ NOTA: ShippingMethods y ShippingZones NO están disponibles en GraphQL
+// El backend no expone estas queries en el schema GraphQL
+// Usar REST API en su lugar:
+// - GET /shipping-methods
+// - GET /shipping-zones
 
-export const GET_SHIPPING_ZONES = gql`
-  query GetShippingZones {
-    shippingZones: findAllShippingZones {
-      id
-      name
-    }
-  }
-`;
+// export const GET_SHIPPING_METHODS = gql`
+//   query GetShippingMethods {
+//     shippingMethods: findAllShippingMethods {
+//       name
+//       type
+//       basePrice
+//       estimatedDays
+//     }
+//   }
+// `;
+
+// export const GET_SHIPPING_ZONES = gql`
+//   query GetShippingZones {
+//     shippingZones: findAllShippingZones {
+//       id
+//       name
+//     }
+//   }
+// `;
 
 export const GET_CUSTOMER_ADDRESSES = gql`
   query GetCustomerAddresses {
@@ -179,11 +212,18 @@ export const GET_CUSTOMER_ADDRESSES = gql`
         node {
           id
           street
-          city
-          state
+          neighborhood
+          reference
           zipCode
-          country
+          cityId
+          parishId
+          sectorId
+          zoneId
+          label
           isDefault
+          isBillingAddress
+          isShippingAddress
+          isActive
         }
       }
     }

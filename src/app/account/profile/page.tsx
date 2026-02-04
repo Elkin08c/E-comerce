@@ -12,24 +12,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
+import { useAuthStore } from "@/store/auth";
+
 export default function ProfilePage() {
   const router = useRouter();
-  const [customerId, setCustomerId] = useState<string | null>(null);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const storedCustomerId = localStorage.getItem("customerId");
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    
     authService.getProfile().catch(() => {
       router.push("/login");
     });
+  }, [router, isAuthenticated]);
 
-    if (storedCustomerId) {
-      setCustomerId(storedCustomerId);
-    } else {
-        // If token exists but no ID, force relogin to get ID
-        // Or handle gracefully. For now, redirect.
-        router.push("/login");
-    }
-  }, [router]);
+  const customerId = user?.id;
 
   const { data, loading, error } = useQuery<any>(GET_CUSTOMER, {
     variables: { id: customerId || "" },

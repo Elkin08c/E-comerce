@@ -8,22 +8,30 @@ export interface PayphoneInitData {
 }
 
 export interface PayphoneInitResponse {
+  token: string;
+  storeId: string;
   amount: number;
-  tax: number;
-  amountWithoutTax: number;
-  clientTransactionID: string;
-  responseUrl: string;
-  cancellationUrl: string;
+  clientTransactionId: string;
+  currency: string;
+  email?: string;
+  phoneNumber?: string;
+  documentId?: string;
+  paymentId: string;
 }
 
 export interface DeunaInitData {
   orderId: string;
-  amount: number;
+  format?: "0" | "1" | "2" | "3" | "4";
 }
 
 export interface DeunaInitResponse {
-  orderToken: string;
-  checkoutUrl: string;
+  transactionId: string;
+  deeplink?: string;
+  qr?: string;
+  numericCode?: string;
+  paymentId: string;
+  amount: number;
+  internalTransactionReference: string;
 }
 
 export const paymentProvidersService = {

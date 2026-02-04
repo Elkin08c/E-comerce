@@ -22,6 +22,7 @@ interface CartStore {
   updateQuantity: (id: string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   fetchCart: () => Promise<void>;
+  syncLocalCartToServer: () => Promise<void>;
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -36,19 +37,58 @@ export const useCartStore = create<CartStore>()(
       cartId: null,
       
       fetchCart: async () => {
+        const state = get();
+        // Solo sincronizar con el servidor si hay un cartId guardado
+        // (lo que significa que el usuario ya hizo login previamente)
+        if (state.cartId) {
+          try {
+            const cart = await cartService.getOrCreateCart();
+            const mappedItems = cart.items.map((item: any) => ({
+              id: item.productId,
+              serverItemId: item.id,
+              name: item.productName,
+              price: item.unitPrice,
+              quantity: item.quantity,
+            }));
+            set({ items: mappedItems, cartId: cart.id });
+          } catch (error) {
+            console.log('Using local cart (server sync failed)');
+          }
+        }
+        // Si no hay cartId, usar carrito local (ya está en el estado de Zustand)
+      },
+
+      syncLocalCartToServer: async () => {
+        const state = get();
+        
+        // Si no hay items locales, no hay nada que sincronizar
+        if (state.items.length === 0) {
+          return;
+        }
+
         try {
+          // Crear o obtener carrito del servidor
           const cart = await cartService.getOrCreateCart();
-          const mappedItems = cart.items.map((item: any) => ({
-            id: item.productId,
-            serverItemId: item.id,
-            name: item.productName,
-            price: item.unitPrice,
-            quantity: item.quantity,
-            // image: item.product?.images?.[0]?.url // Assumes expansion if needed
-          }));
-          set({ items: mappedItems, cartId: cart.id });
+          set({ cartId: cart.id });
+
+          // Agregar todos los items locales al carrito del servidor
+          for (const item of state.items) {
+            try {
+              await cartService.addItem(cart.id, {
+                productId: item.id,
+                quantity: item.quantity,
+              });
+            } catch (error) {
+              console.log(`Failed to sync item ${item.id}:`, error);
+            }
+          }
+
+          // Recargar el carrito desde el servidor para obtener los IDs correctos
+          await get().fetchCart();
+          
+          console.log('Local cart synced to server successfully');
         } catch (error) {
-          console.error("Error fetching cart from server:", error);
+          console.error('Failed to sync local cart to server:', error);
         }
       },
 
@@ -56,104 +96,108 @@ export const useCartStore = create<CartStore>()(
         const state = get();
         const existingItem = state.items.find((item) => item.id === newItem.id);
 
-        try {
-            let cartId = state.cartId;
-            if (!cartId) {
-              const cart = await cartService.getOrCreateCart();
-              cartId = cart.id;
-              set({ cartId });
-            }
+        if (existingItem) {
+          // Si ya existe, aumentar cantidad localmente
+          set((state) => ({
+            items: state.items.map((item) =>
+              item.id === newItem.id
+                ? { ...item, quantity: item.quantity + newItem.quantity }
+                : item
+            ),
+          }));
+        } else {
+          // Agregar nuevo item localmente
+          set((state) => ({
+            items: [...state.items, newItem],
+          }));
+        }
 
-            if (existingItem && existingItem.serverItemId) {
-              await cartService.updateItem(cartId, existingItem.serverItemId, existingItem.quantity + 1);
-            } else {
-              const res = await cartService.addItem(cartId, {
-                productId: newItem.id,
-                quantity: 1,
-              });
-              newItem.serverItemId = res.id;
-            }
+        // Intentar sincronizar con servidor solo si hay cartId
+        if (state.cartId) {
+          try {
+            await cartService.addItem(state.cartId, {
+              productId: newItem.id,
+              quantity: newItem.quantity,
+            });
           } catch (error) {
-            console.error("Error adding item to server cart:", error);
+            console.log('Item added locally (server sync skipped)');
           }
-
-        set((state) => {
-          if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item.id === newItem.id
-                  ? { ...item, quantity: item.quantity + 1 }
-                  : item
-              ),
-              isOpen: true,
-            };
-          }
-          return { items: [...state.items, { ...newItem, quantity: 1 }], isOpen: true };
-        });
+        }
       },
 
       removeItem: async (id) => {
         const state = get();
-        const itemToRemove = state.items.find(item => item.id === id);
-
-        if (state.cartId && itemToRemove?.serverItemId) {
-          try {
-            await cartService.removeItem(state.cartId, itemToRemove.serverItemId);
-          } catch (error) {
-            console.error("Error removing item from server cart:", error);
-          }
-        }
-
+        const item = state.items.find((item) => item.id === id);
+        
+        // Remover localmente
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
         }));
+
+        // Intentar sincronizar con servidor solo si hay cartId y serverItemId
+        if (state.cartId && item?.serverItemId) {
+          try {
+            await cartService.removeItem(state.cartId, item.serverItemId);
+          } catch (error) {
+            console.log('Item removed locally (server sync skipped)');
+          }
+        }
       },
 
       updateQuantity: async (id, quantity) => {
         const state = get();
-        const itemToUpdate = state.items.find(item => item.id === id);
-        const newQuantity = Math.max(1, quantity);
+        const item = state.items.find((item) => item.id === id);
 
-        if (state.cartId && itemToUpdate?.serverItemId) {
-          try {
-            await cartService.updateItem(state.cartId, itemToUpdate.serverItemId, newQuantity);
-          } catch (error) {
-            console.error("Error updating item quantity on server:", error);
-          }
+        if (quantity <= 0) {
+          return get().removeItem(id);
         }
 
+        // Actualizar localmente
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === id ? { ...item, quantity: newQuantity } : item
+            item.id === id ? { ...item, quantity } : item
           ),
         }));
+
+        // Intentar sincronizar con servidor solo si hay cartId y serverItemId
+        if (state.cartId && item?.serverItemId) {
+          try {
+            await cartService.updateItem(state.cartId, item.serverItemId, quantity);
+          } catch (error) {
+            console.log('Quantity updated locally (server sync skipped)');
+          }
+        }
       },
 
       clearCart: async () => {
         const state = get();
+        
+        // Limpiar localmente
+        set({ items: [], cartId: null });
+
+        // Intentar limpiar en servidor solo si hay cartId
         if (state.cartId) {
           try {
             await cartService.clearCart(state.cartId);
           } catch (error) {
-            console.error("Error clearing server cart:", error);
+            console.log('Cart cleared locally (server sync skipped)');
           }
         }
-        set({ items: [] });
       },
 
       toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
       subtotal: () => {
-         return get().items.reduce((acc, item) => {
-             const price = item.salePrice ? item.salePrice : item.price;
-             return acc + price * item.quantity;
-         }, 0);
-      }
+        return get().items.reduce((acc, item) => {
+          const price = item.salePrice || item.price;
+          return acc + price * item.quantity;
+        }, 0);
+      },
     }),
     {
-      name: 'shopping-cart-storage',
-      storage: createJSONStorage(() => localStorage),
+      name: "cart-storage",
+      storage: createJSONStorage(() => localStorage), // Persistir en localStorage
     }
   )
 );

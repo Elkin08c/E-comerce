@@ -66,11 +66,11 @@ export function CartSheet() {
                             <h4 className="font-medium line-clamp-2 text-sm">{item.name}</h4>
                             {item.salePrice ? (
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-sm font-semibold">${item.salePrice.toFixed(2)}</span>
-                                    <span className="text-xs text-muted-foreground line-through">${item.price.toFixed(2)}</span>
+                                    <span className="text-sm font-semibold">${Number(item.salePrice).toFixed(2)}</span>
+                                    <span className="text-xs text-muted-foreground line-through">${Number(item.price).toFixed(2)}</span>
                                 </div>
                             ) : (
-                                <p className="text-sm font-semibold mt-1">${item.price.toFixed(2)}</p>
+                                <p className="text-sm font-semibold mt-1">${Number(item.price).toFixed(2)}</p>
                             )}
                          </div>
                          <Button
@@ -106,7 +106,7 @@ export function CartSheet() {
                             </Button>
                         </div>
                         <div className="text-sm font-medium">
-                            ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
+                            ${(Number(item.salePrice || item.price) * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -119,7 +119,7 @@ export function CartSheet() {
                 <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Subtotal</span>
-                        <span className="font-semibold">${total.toFixed(2)}</span>
+                        <span className="font-semibold">${Number(total).toFixed(2)}</span>
                     </div>
                      <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Envío</span>
@@ -128,12 +128,14 @@ export function CartSheet() {
                      <Separator className="my-2" />
                      <div className="flex justify-between text-base font-semibold">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>${Number(total).toFixed(2)}</span>
                     </div>
                 </div>
                 <div className="grid gap-2">
-                    <Button className="w-full text-lg h-12" size="lg">
-                        Proceder al Pago
+                    <Button asChild className="w-full text-lg h-12" size="lg" onClick={closeCart}>
+                        <Link href="/checkout">
+                            Proceder al Pago
+                        </Link>
                     </Button>
                     <Button variant="outline" className="w-full" onClick={closeCart}>
                         Seguir Comprando

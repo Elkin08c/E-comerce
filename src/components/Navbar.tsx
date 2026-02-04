@@ -19,6 +19,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 import { CartSheet } from "@/components/cart/CartSheet";
 import { useRouter } from "next/navigation";
 
@@ -26,8 +27,8 @@ export default function Navbar() {
   const { toggleCart, items } = useCartStore();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const { data, loading } = useQuery<any>(GET_CATEGORIES);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+   const [isScrolled, setIsScrolled] = useState(false);
+  const { user, isAuthenticated, setUser, logout: logoutStore } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
@@ -44,11 +45,9 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll);
     
-    // Check session on mount
-    customerAuthService.getProfile()
-      .then(() => setIsAuthenticated(true))
-      .catch(() => setIsAuthenticated(false));
-
+    // El estado de autenticación ya se maneja con Zustand + sessionStorage
+    // No necesitamos llamar a getProfile porque el estado persiste automáticamente
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -150,10 +149,10 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                    <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-                     {localStorage.getItem("customerName")?.charAt(0).toUpperCase() || "U"}
+                     {user?.name?.charAt(0).toUpperCase() || "U"}
                    </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -161,7 +160,7 @@ export default function Navbar() {
                 <DropdownMenuLabel>
                     Mi Cuenta
                     <div className="text-xs font-normal text-muted-foreground">
-                        {localStorage.getItem("customerName")}
+                        {user?.name}
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -170,10 +169,9 @@ export default function Navbar() {
                     <Link href="/account/orders" className="w-full cursor-pointer">Mis Pedidos</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={async () => {
+                 <DropdownMenuItem onClick={async () => {
                     await customerAuthService.logout();
-                    localStorage.removeItem("customerName");
-                    localStorage.removeItem("token");
+                    logoutStore();
                     window.location.reload();
                 }}>
                     Cerrar Sesión

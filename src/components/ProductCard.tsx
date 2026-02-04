@@ -89,11 +89,11 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="flex flex-col items-end">
             {hasDiscount && product.salePrice ? (
               <>
-                <span className="text-lg font-bold text-destructive">${product.salePrice.toFixed(2)}</span>
-                <span className="text-sm text-muted-foreground line-through">${product.basePrice.toFixed(2)}</span>
+                <span className="text-lg font-bold text-destructive">${(product.salePrice || 0).toFixed(2)}</span>
+                <span className="text-sm text-muted-foreground line-through">${(product.basePrice || 0).toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-bold text-primary">${product.basePrice.toFixed(2)}</span>
+              <span className="text-lg font-bold text-primary">${(product.basePrice || 0).toFixed(2)}</span>
             )}
           </div>
         </div>

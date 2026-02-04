@@ -122,11 +122,11 @@ export default function ProductDetailPage() {
                      <div className="flex items-center gap-4 mt-4">
                          {product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice ? (
                             <div className="flex items-center gap-3">
-                                <span className="text-3xl font-bold text-destructive">${product.salePrice.toFixed(2)}</span>
-                                <span className="text-xl text-muted-foreground line-through">${product.basePrice.toFixed(2)}</span>
+                                <span className="text-3xl font-bold text-destructive">${(product.salePrice || 0).toFixed(2)}</span>
+                                <span className="text-xl text-muted-foreground line-through">${(product.basePrice || 0).toFixed(2)}</span>
                             </div>
                          ) : (
-                             <span className="text-3xl font-bold text-primary">${product.basePrice.toFixed(2)}</span>
+                             <span className="text-3xl font-bold text-primary">${(product.basePrice || 0).toFixed(2)}</span>
                          )}
                          {/* Placeholder for rating */}
                          <div className="flex items-center gap-1 text-sm">
