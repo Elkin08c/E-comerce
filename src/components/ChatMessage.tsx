@@ -23,31 +23,31 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
     >
       <div
         className={cn(
-          "max-w-[80%] rounded-lg px-4 py-2",
+          "max-w-[80%] rounded-lg px-4 py-2 break-words overflow-wrap-anywhere",
           isUser
             ? "bg-primary text-primary-foreground"
             : "bg-muted text-foreground"
         )}
       >
         {isUser ? (
-          <p className="text-sm whitespace-pre-wrap">{content}</p>
+          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+          <div className="prose prose-sm dark:prose-invert max-w-none break-words">
             <Markdown
               remarkPlugins={[remarkGfm]}
               components={{
                 // Personalizar componentes de Markdown si es necesario
-                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                p: ({ children }) => <p className="mb-2 last:mb-0 break-words">{children}</p>,
                 ul: ({ children }) => <ul className="mb-2 ml-4 list-disc">{children}</ul>,
                 ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal">{children}</ol>,
-                li: ({ children }) => <li className="mb-1">{children}</li>,
+                li: ({ children }) => <li className="mb-1 break-words">{children}</li>,
                 strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
                 a: ({ href, children }) => (
                   <a
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary underline hover:no-underline"
+                    className="text-primary underline hover:no-underline break-all"
                   >
                     {children}
                   </a>
