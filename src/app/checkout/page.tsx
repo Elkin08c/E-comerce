@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { GET_CUSTOMER_ADDRESSES, GET_SHIPPING_METHODS, GET_SHIPPING_ZONES } from "@/graphql/queries";
+import { GET_CUSTOMER_ADDRESSES } from "@/graphql/queries";
 import { CHECKOUT } from "@/graphql/mutations";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";

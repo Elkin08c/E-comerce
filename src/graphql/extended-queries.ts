@@ -184,7 +184,9 @@ export const REMOVE_PRODUCT_ATTRIBUTE = gql`
 `;
 
 // ==================== MÉTODOS DE ENVÍO ====================
+// ⚠️ NOTA: Estos no existen en GraphQL. Usar REST API.
 
+/*
 export const CREATE_SHIPPING_METHOD = gql`
   mutation CreateShippingMethod($createShippingMethodInput: CreateShippingMethodInput!) {
     createShippingMethod(createShippingMethodInput: $createShippingMethodInput) {
@@ -214,9 +216,12 @@ export const REMOVE_SHIPPING_METHOD = gql`
     }
   }
 `;
+*/
 
 // ==================== ZONAS DE ENVÍO ====================
+// ⚠️ NOTA: Estos no existen en GraphQL. Usar REST API.
 
+/*
 export const CREATE_SHIPPING_ZONE = gql`
   mutation CreateShippingZone($createShippingZoneInput: CreateShippingZoneInput!) {
     createShippingZone(createShippingZoneInput: $createShippingZoneInput) {
@@ -242,6 +247,7 @@ export const REMOVE_SHIPPING_ZONE = gql`
     }
   }
 `;
+*/
 
 // ==================== CLIENTES ====================
 
@@ -284,7 +290,7 @@ export const CREATE_CUSTOMER_ADDRESS = gql`
     createCustomersAddress(createCustomersAddressInput: $createCustomersAddressInput) {
       id
       street
-      city
+      cityId
       zipCode
       isDefault
     }
@@ -296,7 +302,7 @@ export const UPDATE_CUSTOMER_ADDRESS = gql`
     updateCustomersAddress(id: $id, data: $data) {
       id
       street
-      city
+      cityId
       zipCode
       isDefault
     }
