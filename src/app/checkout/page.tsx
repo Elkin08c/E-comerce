@@ -16,6 +16,7 @@ import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle } from "l
 import { toast } from "sonner";
 import { logisticsService } from "@/lib/services/logistics.service";
 import { paymentProvidersService } from "@/lib/services/payment-providers.service";
+import { cartService } from "@/lib/services/cart.service";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -130,6 +131,22 @@ export default function CheckoutPage() {
     }
 
     try {
+      // Validar stock antes de proceder
+      if (cartId) {
+        try {
+          const stockValidation = await cartService.validateStock(cartId);
+          if (!stockValidation.valid) {
+            toast.error("Algunos productos ya no tienen stock suficiente", {
+              description: "Por favor revisa tu carrito y actualiza las cantidades."
+            });
+            return;
+          }
+        } catch (stockErr) {
+          console.error("Error validating stock:", stockErr);
+          toast.warning("No se pudo validar el stock. Continuando con precaución...");
+        }
+      }
+
       const { data }: any = await checkout({
         variables: {
           input: {
@@ -165,7 +182,7 @@ export default function CheckoutPage() {
              // @ts-ignore
              window.location.href = init.responseUrl;
            } else {
-             router.push(`/account/orders`);
+             router.push(`/order-confirmation?orderId=${orderId}`);
            }
            return;
         }
@@ -180,14 +197,14 @@ export default function CheckoutPage() {
              window.location.href = init.deeplink;
            } else {
              toast.info("Solicitud de Deuna creada, finaliza el pago en tu app.");
-             router.push(`/account/orders`);
+             router.push(`/order-confirmation?orderId=${orderId}`);
            }
            return;
         }
 
-        toast.success("¡Pedido realizado con éxito!");
+        // Para otros métodos de pago (CASH_ON_DELIVERY, etc.)
         await clearCart();
-        router.push(`/account/orders`);
+        router.push(`/order-confirmation?orderId=${orderId}`);
       } else {
         toast.error(data?.checkout?.message || "Error al procesar el pedido");
       }

@@ -19,6 +19,7 @@ export default function ProductDetailPage() {
   const id = params?.id as string;
   const { addItem } = useCartStore();
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
 
   const { data, loading, error } = useQuery(GET_PRODUCT, {
     variables: { id },
@@ -52,6 +53,41 @@ export default function ProductDetailPage() {
   }
 
   const product = data?.product;
+  
+  // Stock validation
+  const isOutOfStock = product?.stock === 0;
+  const isLowStock = product?.stock > 0 && product?.stock <= 5;
+  const maxQuantity = product?.stock || 0;
+  
+  // Handle add to cart with validation
+  const handleAddToCart = async () => {
+    if (isOutOfStock) {
+      toast.error("Producto sin stock");
+      return;
+    }
+    
+    if (quantity > maxQuantity) {
+      toast.error(`Solo hay ${maxQuantity} unidades disponibles`);
+      return;
+    }
+    
+    setIsAdding(true);
+    try {
+      await addItem({
+        id: product.id,
+        name: product.name,
+        price: product.basePrice,
+        salePrice: product.salePrice,
+        quantity: quantity,
+      });
+      toast.success(`${quantity} ${quantity === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
+    } catch (error) {
+      toast.error("Error al agregar al carrito");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+  
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -165,7 +201,8 @@ export default function ProductDetailPage() {
                                 variant="ghost" 
                                 size="icon" 
                                 className="h-10 w-10 rounded-full"
-                                onClick={() => setQuantity(q => q + 1)}
+                                disabled={quantity >= maxQuantity}
+                                onClick={() => setQuantity(q => Math.min(q + 1, maxQuantity))}
                             >
                                 +
                             </Button>
@@ -173,21 +210,26 @@ export default function ProductDetailPage() {
                          <Button 
                             size="lg" 
                             className="flex-1 h-12 text-lg rounded-full shadow-lg shadow-primary/20"
-                            onClick={() => {
-                                addItem({
-                                    id: product.id,
-                                    name: product.name,
-                                    price: product.basePrice,
-                                    salePrice: product.salePrice,
-                                    quantity: quantity,
-                                    // image: product.images?.[0]?.url 
-                                });
-                                toast.success("Agregado al carrito");
-                            }}
+                            onClick={handleAddToCart}
+                            disabled={isOutOfStock || isAdding}
                          >
-                             Agregar al Carrito
+                             {isAdding ? (
+                               <>
+                                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                 Agregando...
+                               </>
+                             ) : isOutOfStock ? (
+                               "Sin Stock"
+                             ) : (
+                               "Agregar al Carrito"
+                             )}
                          </Button>
                     </div>
+                    {isLowStock && !isOutOfStock && (
+                      <p className="text-sm text-orange-600 font-medium">
+                        ⚠️ Solo quedan {maxQuantity} unidades disponibles
+                      </p>
+                    )}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 pt-6 text-sm text-muted-foreground">

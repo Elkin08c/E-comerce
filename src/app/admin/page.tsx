@@ -13,13 +13,13 @@ export default function Dashboard() {
       // Simple error handling for auth
       if (productsError.message.includes("Unauthorized") || productsError.message.includes("Forbidden")) {
           // In a real app, use a proper auth guard or middleware
-          return <div className="p-4 text-red-500">Please log in to view the dashboard.</div>
+          return <div className="p-4 text-red-500">Por favor inicia sesión para ver el panel de administración.</div>
       }
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+      <h1 className="text-3xl font-bold tracking-tight text-gray-900">Panel de Control</h1>
       
       {/* Stats */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -30,7 +30,7 @@ export default function Dashboard() {
                 <Package className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Products</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">Total Productos</dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">
                     {productsData?.products?.totalCount || 0}
                 </dd>
@@ -45,7 +45,7 @@ export default function Dashboard() {
                 <ShoppingCart className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">Total Pedidos</dt>
                  <dd className="mt-1 text-3xl font-semibold text-gray-900">
                     {ordersData?.orders?.totalCount || 0}
                 </dd>
@@ -60,9 +60,9 @@ export default function Dashboard() {
                 <Activity className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
-                <dt className="text-sm font-medium text-gray-500 truncate">System Status</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">Estado del Sistema</dt>
                  <dd className="mt-1 text-lg font-semibold text-gray-900">
-                    Active
+                    Activo
                 </dd>
               </div>
             </div>
@@ -73,7 +73,7 @@ export default function Dashboard() {
           {/* Recent Products */}
           <div className="bg-white shadow rounded-lg overflow-hidden">
              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Products</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Productos Recientes</h3>
             </div>
             <ul className="divide-y divide-gray-200">
                 {productsData?.products?.edges?.map(({ node }: { node: any }) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -93,7 +93,7 @@ export default function Dashboard() {
            {/* Recent Orders */}
            <div className="bg-white shadow rounded-lg overflow-hidden">
              <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">Recent Orders</h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Pedidos Recientes</h3>
             </div>
             <ul className="divide-y divide-gray-200">
                  {ordersData?.orders?.edges?.map(({ node }: { node: any }) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -114,7 +114,7 @@ export default function Dashboard() {
                          </div>
                     </li>
                 ))}
-                 {(!ordersData?.orders?.edges?.length) && <p className="p-4 text-gray-500 text-sm">No orders yet.</p>}
+                 {(!ordersData?.orders?.edges?.length) && <p className="p-4 text-gray-500 text-sm">No hay pedidos aún.</p>}
             </ul>
           </div>
       </div>

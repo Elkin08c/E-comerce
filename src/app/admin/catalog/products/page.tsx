@@ -180,7 +180,7 @@ export default function ProductsPage() {
                         </div>
                         <div className="ml-4">
                             <div className="text-sm font-medium">{node.name}</div>
-                            {/* <div className="text-sm text-muted-foreground">{node.category?.name}</div> */}
+                             <div className="text-xs text-muted-foreground">Producto</div>
                         </div>
                     </div>
                 </td>

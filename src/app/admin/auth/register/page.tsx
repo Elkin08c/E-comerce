@@ -45,7 +45,7 @@ export default function RegisterPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred");
+        setError("Ocurrió un error desconocido");
       }
     } finally {
       setLoading(false);
@@ -57,12 +57,12 @@ export default function RegisterPage() {
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create an account
+            Crear una cuenta
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
+            O{" "}
             <Link href="/admin/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-              sign in to your existing account
+              inicia sesión con tu cuenta existente
             </Link>
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function RegisterPage() {
                 type="text"
                 required
                 className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Full Name"
+                placeholder="Nombre Completo"
                 value={formData.name}
                 onChange={handleChange}
               />
@@ -94,7 +94,7 @@ export default function RegisterPage() {
                 autoComplete="email"
                 required
                 className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Email address"
+                placeholder="Correo electrónico"
                 value={formData.email}
                 onChange={handleChange}
               />
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                 name="phone"
                 type="tel"
                 className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Phone (optional)"
+                placeholder="Teléfono (opcional)"
                 value={formData.phone}
                 onChange={handleChange}
               />
@@ -124,7 +124,7 @@ export default function RegisterPage() {
                 autoComplete="new-password"
                 required
                 className="block w-full rounded-md border-0 py-3 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-                placeholder="Password"
+                placeholder="Contraseña"
                 value={formData.password}
                 onChange={handleChange}
               />
@@ -138,8 +138,8 @@ export default function RegisterPage() {
                 value={formData.role}
                 onChange={handleChange}
               >
-                  <option value="ADMIN">Admin</option>
-                  <option value="STAFF">Staff</option>
+                  <option value="ADMIN">Administrador</option>
+                  <option value="STAFF">Personal</option>
               </select>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-3 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="animate-spin h-5 w-5" /> : "Sign Up"}
+              {loading ? <Loader2 className="animate-spin h-5 w-5" /> : "Registrarse"}
             </button>
           </div>
         </form>

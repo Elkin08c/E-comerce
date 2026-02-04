@@ -30,6 +30,8 @@ import { Separator } from "@/components/ui/separator";
 export default function CatalogPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showOnlyInStock, setShowOnlyInStock] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("default");
   
   // Fetch Categories
   const { data: catData, loading: catLoading } = useQuery<any>(GET_CATEGORIES);
@@ -44,12 +46,10 @@ export default function CatalogPage() {
     return prodData?.products?.edges?.map((e: any) => e.node) || [];
   }, [prodData]);
 
-  // Filtering Logic
+  // Filtering and Sorting Logic
   const filteredProducts = useMemo(() => {
-    return products.filter((product: any) => {
+    let filtered = products.filter((product: any) => {
       // 1. Category Filter
-      // Note: We updated query to fetch 'category: categoryId'. 
-      // If product has no category, it passes if no category selected.
       if (selectedCategories.length > 0) {
         if (!product.category || !selectedCategories.includes(product.category)) {
             return false;
@@ -62,9 +62,33 @@ export default function CatalogPage() {
         return false;
       }
 
+      // 3. Stock Filter
+      if (showOnlyInStock && product.stock === 0) {
+        return false;
+      }
+
       return true;
     });
-  }, [products, selectedCategories, priceRange]);
+
+    // Sorting
+    if (sortBy === "price-asc") {
+      filtered = [...filtered].sort((a, b) => {
+        const priceA = a.salePrice || a.basePrice || 0;
+        const priceB = b.salePrice || b.basePrice || 0;
+        return priceA - priceB;
+      });
+    } else if (sortBy === "price-desc") {
+      filtered = [...filtered].sort((a, b) => {
+        const priceA = a.salePrice || a.basePrice || 0;
+        const priceB = b.salePrice || b.basePrice || 0;
+        return priceB - priceA;
+      });
+    } else if (sortBy === "name") {
+      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return filtered;
+  }, [products, selectedCategories, priceRange, showOnlyInStock, sortBy]);
 
   const toggleCategory = (catId: string) => {
     setSelectedCategories(prev => 
@@ -124,7 +148,27 @@ export default function CatalogPage() {
          />
       </div>
       
-      {(selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 2000) && (
+      <Separator />
+
+      {/* Stock Availability */}
+      <div className="space-y-4">
+        <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Disponibilidad</h3>
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="in-stock" 
+            checked={showOnlyInStock}
+            onCheckedChange={(checked) => setShowOnlyInStock(checked as boolean)}
+          />
+          <Label 
+            htmlFor="in-stock" 
+            className="text-sm font-normal cursor-pointer hover:text-primary transition-colors"
+          >
+            Solo productos en stock
+          </Label>
+        </div>
+      </div>
+      
+      {(selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 2000 || showOnlyInStock) && (
           <Button 
             variant="outline" 
             size="sm" 
@@ -132,6 +176,7 @@ export default function CatalogPage() {
             onClick={() => {
                 setSelectedCategories([]);
                 setPriceRange([0, 2000]);
+                setShowOnlyInStock(false);
             }}
           >
               Limpiar Filtros
@@ -181,11 +226,25 @@ export default function CatalogPage() {
 
             {/* Main Grid */}
             <div className="flex-1">
-                <div className="mb-6 flex items-center justify-between">
-                     <h1 className="text-3xl font-bold tracking-tight">Catálogo</h1>
-                     <span className="text-muted-foreground text-sm">
-                        {filteredProducts.length} resultados
-                     </span>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                     <div>
+                       <h1 className="text-3xl font-bold tracking-tight">Catálogo</h1>
+                       <span className="text-muted-foreground text-sm mt-1">
+                          {filteredProducts.length} {filteredProducts.length === 1 ? 'resultado' : 'resultados'}
+                       </span>
+                     </div>
+                     
+                     {/* Sort Selector */}
+                     <select
+                       value={sortBy}
+                       onChange={(e) => setSortBy(e.target.value)}
+                       className="px-4 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                     >
+                       <option value="default">Ordenar por: Predeterminado</option>
+                       <option value="price-asc">Precio: Menor a Mayor</option>
+                       <option value="price-desc">Precio: Mayor a Menor</option>
+                       <option value="name">Nombre: A-Z</option>
+                     </select>
                 </div>
                 
                 {prodLoading ? (

@@ -25,9 +25,20 @@ import { toast } from "sonner";
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCartStore();
   
+  const isOutOfStock = product.stock === 0;
+  const isLowStock = product.stock > 0 && product.stock <= 5;
+  
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (isOutOfStock) {
+      toast.error("Producto sin stock", {
+        description: "Este producto no está disponible actualmente."
+      });
+      return;
+    }
+    
     addItem({
       id: product.id,
       name: product.name,
@@ -51,7 +62,12 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardHeader className="p-0">
         <div className="aspect-[4/5] relative bg-secondary/20 overflow-hidden flex items-center justify-center">
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
-            {product.stock <= 5 && product.stock > 0 && (
+            {isOutOfStock && (
+              <span className="bg-gray-800 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm w-fit">
+                Sin Stock
+              </span>
+            )}
+            {isLowStock && (
               <span className="bg-orange-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm w-fit">
                 Pocas Unidades
               </span>
@@ -69,7 +85,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Quick Actions Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-            <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75" onClick={handleAddToCart}>
+            <Button 
+              variant="secondary" 
+              size="icon" 
+              className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75" 
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              title={isOutOfStock ? "Sin stock" : "Agregar al carrito"}
+            >
               <ShoppingBag className="h-4 w-4" />
             </Button>
             <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
@@ -81,8 +104,8 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardHeader>
       <CardContent className="pt-4 px-2">
-        <div className="flex justify-between items-start">
-          <div>
+        <div className="flex justify-between items-start mb-2">
+          <div className="flex-1">
             <CardTitle className="text-base font-medium line-clamp-1">{product.name}</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">Producto</p>
           </div>
@@ -97,6 +120,32 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
         </div>
+        
+        {/* Stock Indicator */}
+        {!isOutOfStock && (
+          <div className="mt-3 space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Stock disponible</span>
+              <span className={`font-semibold ${
+                product.stock > 10 ? 'text-green-600' : 
+                product.stock > 5 ? 'text-yellow-600' : 
+                'text-orange-600'
+              }`}>
+                {product.stock} unidades
+              </span>
+            </div>
+            <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className={`h-full transition-all ${
+                  product.stock > 10 ? 'bg-green-500' : 
+                  product.stock > 5 ? 'bg-yellow-500' : 
+                  'bg-orange-500'
+                }`}
+                style={{ width: `${Math.min((product.stock / 20) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

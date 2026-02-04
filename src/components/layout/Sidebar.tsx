@@ -14,13 +14,13 @@ import {
 } from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Products", href: "/admin/catalog/products", icon: Package },
-  { name: "Categories", href: "/admin/catalog/categories", icon: List },
-  { name: "Orders", href: "/admin/sales/orders", icon: ShoppingCart },
-  { name: "Customers", href: "/admin/sales/customers", icon: Users },
-  { name: "Logistics", href: "/admin/logistics", icon: Truck },
-  { name: "Users", href: "/admin/setup/users", icon: Settings },
+  { name: "Panel de Control", href: "/admin", icon: LayoutDashboard },
+  { name: "Productos", href: "/admin/catalog/products", icon: Package },
+  { name: "Categorías", href: "/admin/catalog/categories", icon: List },
+  { name: "Pedidos", href: "/admin/sales/orders", icon: ShoppingCart },
+  { name: "Clientes", href: "/admin/sales/customers", icon: Users },
+  { name: "Logística", href: "/admin/logistics", icon: Truck },
+  { name: "Usuarios", href: "/admin/setup/users", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -29,7 +29,7 @@ export function Sidebar() {
   return (
     <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
       <div className="flex h-16 items-center justify-center border-b border-gray-800">
-        <span className="text-xl font-bold">Admin Panel</span>
+        <span className="text-xl font-bold">Panel Admin</span>
       </div>
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-1 px-2">
@@ -68,7 +68,7 @@ export function Sidebar() {
           className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
         >
           <LogOut className="mr-3 h-5 w-5 text-gray-400 group-hover:text-gray-300" />
-          Sign Out
+          Cerrar Sesión
         </button>
       </div>
     </div>
