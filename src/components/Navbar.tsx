@@ -164,7 +164,12 @@ export default function Navbar() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Perfil</DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/account/profile" className="w-full cursor-pointer">Perfil</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/account/addresses" className="w-full cursor-pointer">Direcciones</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/account/orders" className="w-full cursor-pointer">Mis Pedidos</Link>
                 </DropdownMenuItem>

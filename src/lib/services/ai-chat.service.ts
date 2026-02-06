@@ -1,5 +1,5 @@
 // AI Chat Service - Comunicación con el microservicio de agente de ventas con IA
-const AI_API_URL = "http://localhost:8002";
+const AI_API_URL = "http://localhost:8006";
 
 export interface ChatMessage {
   id: string;

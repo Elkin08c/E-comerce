@@ -8,6 +8,7 @@ export const GET_PRODUCTS = gql`
         node {
           id
           name
+          slug
           sku
           salePrice
           costPrice
@@ -17,6 +18,13 @@ export const GET_PRODUCTS = gql`
           isActive
           tags
           categoryId
+          stock
+          images {
+            id
+            url
+            altText
+            isMain
+          }
         }
       }
     }
@@ -28,6 +36,7 @@ export const GET_PRODUCT = gql`
     product(id: $id) {
       id
       name
+      slug
       description
       salePrice
       costPrice
@@ -39,6 +48,14 @@ export const GET_PRODUCT = gql`
       categoryId
       metaTitle
       metaDescription
+      stock
+      images {
+        id
+        url
+        altText
+        isMain
+        sortOrder
+      }
       variants {
         id
         name
@@ -46,6 +63,7 @@ export const GET_PRODUCT = gql`
         salePrice
         costPrice
         isActive
+        stock
         attributes {
           color
           storage
@@ -145,6 +163,13 @@ export const GET_CATEGORY_BY_SLUG = gql`
         isFeatured
         isActive
         tags
+        stock
+        images {
+          id
+          url
+          altText
+          isMain
+        }
       }
     }
   }
@@ -226,6 +251,27 @@ export const GET_CUSTOMER_ADDRESSES = gql`
           isActive
         }
       }
+    }
+  }
+`;
+
+export const GET_CUSTOMER = gql`
+  query GetCustomer($id: String!) {
+    customer(id: $id) {
+      id
+      email
+      firstName
+      lastName
+      phone
+      shippingAddress
+      shippingCity
+      shippingState
+      shippingZipCode
+      shippingCountry
+      billingAddress
+      billingCity
+      billingState
+      isActive
     }
   }
 `;

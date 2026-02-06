@@ -17,7 +17,7 @@ function SearchResults() {
   
   // We fetch a larger batch to improve likelihood of finding matches
   const { data, loading, error } = useQuery<any>(GET_PRODUCTS, {
-    variables: { limit: 50, offset: 0 },
+    variables: { first: 50 },
     fetchPolicy: "cache-and-network"
   });
 
@@ -39,12 +39,17 @@ function SearchResults() {
     );
   }
 
-  const products = data?.products?.items || [];
+  const products = data?.products?.edges?.map((edge: any) => edge.node) || [];
   
-  // Client-side filtering
-  const filteredProducts = products.filter((product: any) => 
-    product.name.toLowerCase().includes(query.toLowerCase())
-  );
+  // Client-side filtering by name, tags, and sku
+  const filteredProducts = products.filter((product: any) => {
+    const searchLower = query.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(searchLower) ||
+      product.sku?.toLowerCase().includes(searchLower) ||
+      product.tags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
+    );
+  });
 
   return (
     <main className="flex-1 container mx-auto px-4 py-8">

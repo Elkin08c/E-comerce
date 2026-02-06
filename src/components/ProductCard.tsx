@@ -8,11 +8,18 @@ import Link from "next/link";
 export interface Product {
   id: string;
   name: string;
+  slug?: string;
   basePrice: number;
   salePrice?: number;
   isActive: boolean;
   stock: number;
   tags?: string[];
+  images?: Array<{
+    id: string;
+    url: string;
+    altText?: string;
+    isMain: boolean;
+  }>;
 }
 
 interface ProductCardProps {
@@ -78,9 +85,17 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
           </div>
-          {/* Placeholder for product image - In real app use Next.js Image */}
-          <div className="group-hover:scale-105 transition-transform duration-500">
-            <ShoppingCart className="h-16 w-16 text-muted-foreground/30" />
+          {/* Product Image */}
+          <div className="group-hover:scale-105 transition-transform duration-500 w-full h-full flex items-center justify-center">
+            {product.images && product.images.length > 0 ? (
+              <img 
+                src={product.images.find(img => img.isMain)?.url || product.images[0].url}
+                alt={product.images.find(img => img.isMain)?.altText || product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <ShoppingCart className="h-16 w-16 text-muted-foreground/30" />
+            )}
           </div>
 
           {/* Quick Actions Overlay */}
