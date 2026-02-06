@@ -18,13 +18,6 @@ export const GET_PRODUCTS = gql`
           isActive
           tags
           categoryId
-          stock
-          images {
-            id
-            url
-            altText
-            isMain
-          }
         }
       }
     }
@@ -48,14 +41,6 @@ export const GET_PRODUCT = gql`
       categoryId
       metaTitle
       metaDescription
-      stock
-      images {
-        id
-        url
-        altText
-        isMain
-        sortOrder
-      }
       variants {
         id
         name
@@ -63,7 +48,6 @@ export const GET_PRODUCT = gql`
         salePrice
         costPrice
         isActive
-        stock
         attributes {
           color
           storage
@@ -163,13 +147,6 @@ export const GET_CATEGORY_BY_SLUG = gql`
         isFeatured
         isActive
         tags
-        stock
-        images {
-          id
-          url
-          altText
-          isMain
-        }
       }
     }
   }

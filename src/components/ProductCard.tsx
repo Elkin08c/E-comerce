@@ -12,7 +12,7 @@ export interface Product {
   basePrice: number;
   salePrice?: number;
   isActive: boolean;
-  stock: number;
+  stock?: number; // Optional - backend may not expose this
   tags?: string[];
   images?: Array<{
     id: string;
@@ -32,8 +32,10 @@ import { toast } from "sonner";
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCartStore();
   
-  const isOutOfStock = product.stock === 0;
-  const isLowStock = product.stock > 0 && product.stock <= 5;
+  // Handle optional stock field - default to available if not provided
+  const stock = product.stock ?? 100; // Default to 100 if backend doesn't provide stock
+  const isOutOfStock = stock === 0;
+  const isLowStock = stock > 0 && stock <= 5;
   
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -137,26 +139,26 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         
         {/* Stock Indicator */}
-        {!isOutOfStock && (
+        {!isOutOfStock && product.stock !== undefined && (
           <div className="mt-3 space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Stock disponible</span>
               <span className={`font-semibold ${
-                product.stock > 10 ? 'text-green-600' : 
-                product.stock > 5 ? 'text-yellow-600' : 
+                stock > 10 ? 'text-green-600' : 
+                stock > 5 ? 'text-yellow-600' : 
                 'text-orange-600'
               }`}>
-                {product.stock} unidades
+                {stock} unidades
               </span>
             </div>
             <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
               <div 
                 className={`h-full transition-all ${
-                  product.stock > 10 ? 'bg-green-500' : 
-                  product.stock > 5 ? 'bg-yellow-500' : 
+                  stock > 10 ? 'bg-green-500' : 
+                  stock > 5 ? 'bg-yellow-500' : 
                   'bg-orange-500'
                 }`}
-                style={{ width: `${Math.min((product.stock / 20) * 100, 100)}%` }}
+                style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
               />
             </div>
           </div>
