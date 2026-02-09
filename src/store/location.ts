@@ -19,12 +19,13 @@ interface LocationState {
   errorMessage: string | null;
   lastDetectedAt: number | null;
   detectLocation: () => void;
+  checkCoverage: (latitude: number, longitude: number) => Promise<void>;
   clearLocation: () => void;
 }
 
 export const useLocationStore = create<LocationState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       latitude: null,
       longitude: null,
       zones: [],
@@ -44,37 +45,7 @@ export const useLocationStore = create<LocationState>()(
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude } = position.coords;
-            set({ latitude, longitude, status: 'loading' });
-
-            try {
-              const zones = await logisticsService.getZonesByLocation(latitude, longitude);
-
-              const sorted = [...zones].sort(
-                (a, b) => (ZONE_TYPE_PRIORITY[a.type] ?? 99) - (ZONE_TYPE_PRIORITY[b.type] ?? 99)
-              );
-
-              set({
-                zones: sorted,
-                primaryZone: sorted[0] ?? null,
-                status: 'resolved',
-                lastDetectedAt: Date.now(),
-              });
-            } catch (error) {
-              const message = error instanceof Error ? error.message : '';
-              const isNoZoneFound = message.includes('No se encontró una zona');
-
-              if (isNoZoneFound) {
-                // Sin cobertura: permitir continuar en el ecommerce
-                set({
-                  zones: [],
-                  primaryZone: null,
-                  status: 'resolved',
-                  lastDetectedAt: Date.now(),
-                });
-              } else {
-                set({ status: 'error', errorMessage: 'Error al consultar zonas de cobertura' });
-              }
-            }
+            get().checkCoverage(latitude, longitude);
           },
           (error) => {
             if (error.code === error.PERMISSION_DENIED) {
@@ -91,6 +62,47 @@ export const useLocationStore = create<LocationState>()(
             maximumAge: 300000,
           }
         );
+      },
+
+      checkCoverage: async (latitude: number, longitude: number) => {
+        set({ latitude, longitude, status: 'loading', errorMessage: null });
+
+        try {
+          const response = await logisticsService.getZonesByLocation(latitude, longitude);
+          const zones = Array.isArray(response) ? response : [];
+
+          const sorted = [...zones].sort(
+            (a, b) => (ZONE_TYPE_PRIORITY[a.type] ?? 99) - (ZONE_TYPE_PRIORITY[b.type] ?? 99)
+          );
+
+          set({
+            zones: sorted,
+            primaryZone: sorted[0] ?? null,
+            status: 'resolved',
+            lastDetectedAt: Date.now(),
+          });
+        } catch (error: any) {
+          console.error("Error checking coverage:", error);
+          const message = error instanceof Error ? error.message : String(error);
+
+          // Check for common "not found" indicators from backend or HTTP status
+          const isNoZoneFound =
+            message.includes('No se encontró una zona') ||
+            message.includes('not found') ||
+            message.includes('404');
+
+          if (isNoZoneFound) {
+            // Sin cobertura: permitir continuar en el ecommerce
+            set({
+              zones: [],
+              primaryZone: null,
+              status: 'resolved',
+              lastDetectedAt: Date.now(),
+            });
+          } else {
+            set({ status: 'error', errorMessage: message || 'Error al consultar zonas de cobertura' });
+          }
+        }
       },
 
       clearLocation: () =>

@@ -39,12 +39,24 @@ export const GET_PRODUCT = gql`
       categoryId
       metaTitle
       metaDescription
+      stock
+      availableStock
+      images {
+        url
+        altText
+      }
       variants {
         id
         name
         sku
         salePrice
         costPrice
+        stock
+        availableStock
+        images {
+          url
+          altText
+        }
         attributes {
           color
           storage

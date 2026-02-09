@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle, Locate } from "lucide-react";
+import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle, Locate, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { logisticsService } from "@/lib/services/logistics.service";
 import { paymentProvidersService } from "@/lib/services/payment-providers.service";
@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   const { items, subtotal, clearCart, cartId, fetchCart } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const { primaryZone: detectedZone, status: locationStatus, detectLocation } = useLocationStore();
-  
+
   // Verificar autenticación al cargar la página
   useEffect(() => {
     if (!isAuthenticated) {
@@ -40,7 +40,7 @@ export default function CheckoutPage() {
       fetchCart();
     }
   }, [isAuthenticated, router, cartId, fetchCart]);
-  
+
   const { data: addrData, loading: addrLoading } = useQuery<any>(GET_CUSTOMER_ADDRESSES);
   const [checkout, { loading: processing }] = useMutation(CHECKOUT);
 
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
   // Cargar zonas al montar el componente
   useEffect(() => {
     if (!isAuthenticated) return; // No cargar si no está autenticado
-    
+
     const fetchZones = async () => {
       try {
         const zonesData = await logisticsService.getZones();
@@ -89,7 +89,7 @@ export default function CheckoutPage() {
           ]);
           setShippingMethods(shipData);
           setPaymentMethods(payData);
-          
+
           // Reset selections
           setSelectedShipping("");
           setSelectedPayment("");
@@ -178,39 +178,39 @@ export default function CheckoutPage() {
 
         // Lógica para proveedores externos
         if (selectedPayment === "PAYPHONE") {
-           const init = await paymentProvidersService.initializePayphone({
-             orderId,
-             amount: Math.round(subtotal() * 100), // Convertir a centavos para backend
-             tax: 0
-           });
-           
-           // Si el backend devuelve una URL (a veces lo hace si es redirección)
-           // de lo contrario, aquí se dispararía el SDK de Payphone
-           // Por ahora, como es una transición, redirigimos si existe o informamos éxito
-           toast.success("Pago con Payphone iniciado. Redirigiendo...");
-           // @ts-ignore - Dependiendo de la implementación del backend
-           if (init.responseUrl) {
-             // @ts-ignore
-             window.location.href = init.responseUrl;
-           } else {
-             router.push(`/order-confirmation?orderId=${orderId}`);
-           }
-           return;
+          const init = await paymentProvidersService.initializePayphone({
+            orderId,
+            amount: Math.round(subtotal() * 100), // Convertir a centavos para backend
+            tax: 0
+          });
+
+          // Si el backend devuelve una URL (a veces lo hace si es redirección)
+          // de lo contrario, aquí se dispararía el SDK de Payphone
+          // Por ahora, como es una transición, redirigimos si existe o informamos éxito
+          toast.success("Pago con Payphone iniciado. Redirigiendo...");
+          // @ts-ignore - Dependiendo de la implementación del backend
+          if (init.responseUrl) {
+            // @ts-ignore
+            window.location.href = init.responseUrl;
+          } else {
+            router.push(`/order-confirmation?orderId=${orderId}`);
+          }
+          return;
         }
 
         if (selectedPayment === "DEUNA") {
-           const init = await paymentProvidersService.initializeDeuna({
-             orderId,
-             format: "2" // QR + Deeplink
-           });
-           
-           if (init.deeplink) {
-             window.location.href = init.deeplink;
-           } else {
-             toast.info("Solicitud de Deuna creada, finaliza el pago en tu app.");
-             router.push(`/order-confirmation?orderId=${orderId}`);
-           }
-           return;
+          const init = await paymentProvidersService.initializeDeuna({
+            orderId,
+            format: "2" // QR + Deeplink
+          });
+
+          if (init.deeplink) {
+            window.location.href = init.deeplink;
+          } else {
+            toast.info("Solicitud de Deuna creada, finaliza el pago en tu app.");
+            router.push(`/order-confirmation?orderId=${orderId}`);
+          }
+          return;
         }
 
         // Para otros métodos de pago (CASH_ON_DELIVERY, etc.)
@@ -235,7 +235,7 @@ export default function CheckoutPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           {/* Direcciones */}
@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                   </div>
                 ))}
                 {addresses.length === 0 && (
-                   <p className="text-muted-foreground text-sm">No tienes direcciones guardadas. Agrega una en tu perfil.</p>
+                  <p className="text-muted-foreground text-sm">No tienes direcciones guardadas. Agrega una en tu perfil.</p>
                 )}
               </RadioGroup>
             </CardContent>
@@ -294,7 +294,7 @@ export default function CheckoutPage() {
                   Detectando zona...
                 </div>
               )}
-               <RadioGroup value={selectedZone} onValueChange={setSelectedZone} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RadioGroup value={selectedZone} onValueChange={setSelectedZone} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {zones.map((zone: any) => (
                   <div key={zone.id} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value={zone.id} id={zone.id} />
@@ -396,9 +396,19 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <span>{item.name} x {item.quantity}</span>
-                    <span>${(Number(item.price) * item.quantity).toFixed(2)}</span>
+                  <div key={item.id} className="flex gap-4 text-sm">
+                    <div className="w-12 h-12 bg-secondary/20 rounded flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ShoppingCart className="h-6 w-6 text-muted-foreground/30" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-muted-foreground">{item.quantity} x ${Number(item.price).toFixed(2)}</div>
+                    </div>
+                    <div className="font-semibold">${(Number(item.price) * item.quantity).toFixed(2)}</div>
                   </div>
                 ))}
               </div>
@@ -409,17 +419,17 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-muted-foreground text-sm">
                 <span>Envío</span>
-                <span>Calculado al procesar</span>
+                <span>{currentShipping ? `$${Number(currentShipping.baseCost).toFixed(2)}` : "Calculado al procesar"}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
-                <span>${Number(subtotal()).toFixed(2)}</span>
+                <span>${(Number(subtotal()) + (currentShipping ? Number(currentShipping.baseCost) : 0)).toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>
-              <Button 
-                className="w-full h-12 text-lg" 
+              <Button
+                className="w-full h-12 text-lg"
                 onClick={handlePlaceOrder}
                 disabled={processing || items.length === 0}
               >

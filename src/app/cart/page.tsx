@@ -83,16 +83,20 @@ export default function CartPage() {
                 <Card key={item.id}>
                   <CardContent className="p-6">
                     <div className="flex gap-6">
-                      {/* Placeholder Image */}
-                      <div className="w-24 h-24 bg-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
+                      {/* Image */}
+                      <div className="w-24 h-24 bg-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
+                        )}
                       </div>
 
                       {/* Item Details */}
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
-                            <Link 
+                            <Link
                               href={`/product/${item.id}`}
                               className="font-semibold text-lg hover:text-primary transition-colors"
                             >
@@ -187,17 +191,17 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-2">
-                <Button 
-                  className="w-full h-12 text-lg" 
+                <Button
+                  className="w-full h-12 text-lg"
                   size="lg"
                   onClick={() => router.push("/checkout")}
                 >
                   Proceder al Checkout
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
+                <Button
+                  variant="outline"
+                  className="w-full"
                   asChild
                 >
                   <Link href="/catalog">

@@ -22,6 +22,7 @@ import {
   MapPin,
   RefreshCw,
 } from "lucide-react";
+import MapSelectorDynamic from "@/components/ui/MapSelectorDynamic";
 
 interface CoverageCheckerProps {
   trigger?: ReactNode;
@@ -52,7 +53,8 @@ const ZONE_TYPE_CONFIG = {
 } as const;
 
 export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
-  const { status, primaryZone, errorMessage, detectLocation } = useLocationStore();
+  const [showMap, setShowMap] = useState(false);
+  const { status, primaryZone, errorMessage, detectLocation, checkCoverage, latitude, longitude } = useLocationStore();
   const [open, setOpen] = useState(false);
   const [meetingPoints, setMeetingPoints] = useState<MeetingPoint[]>([]);
   const [loadingMPs, setLoadingMPs] = useState(false);
@@ -74,9 +76,17 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
     detectLocation();
   };
 
+  const handleManualSelect = (lat: number, lng: number) => {
+    checkCoverage(lat, lng);
+    // setShowMap(false); // Keep map open for inline feedback
+  };
+
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (isOpen && status === "idle") {
+      // detectLocation(); // Don't auto-detect immediately if we want to give option
+      // However, typical UX is to try auto-detect first.
+      // Let's keep auto-detect but offer manual override if it fails or user wants to change.
       detectLocation();
     }
   };
@@ -87,6 +97,70 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
   const noCoverage = status === "resolved" && primaryZone === null;
 
   const renderContent = () => {
+    if (showMap) {
+      return (
+        <div className="space-y-4">
+          <MapSelectorDynamic
+            onLocationSelect={handleManualSelect}
+            initialLat={latitude || undefined}
+            initialLng={longitude || undefined}
+          />
+
+          {isLoading && (
+            <div className="flex items-center gap-2 p-3 bg-muted/20 rounded-lg">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <p className="text-sm">Verificando cobertura...</p>
+            </div>
+          )}
+
+          {!isLoading && hasCoverage && (
+            <div className="space-y-3">
+              <div className={`flex items-start gap-3 p-3 rounded-lg ${ZONE_TYPE_CONFIG[primaryZone.type].bg}`}>
+                {(() => {
+                  const Icon = ZONE_TYPE_CONFIG[primaryZone.type].icon;
+                  return <Icon className={`h-5 w-5 ${ZONE_TYPE_CONFIG[primaryZone.type].color} shrink-0 mt-0.5`} />;
+                })()}
+                <div>
+                  <p className={`font-semibold text-sm ${ZONE_TYPE_CONFIG[primaryZone.type].color}`}>
+                    {ZONE_TYPE_CONFIG[primaryZone.type].label}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {ZONE_TYPE_CONFIG[primaryZone.type].description}
+                  </p>
+                </div>
+              </div>
+              <Button className="w-full" onClick={() => setShowMap(false)}>
+                Confirmar ubicación
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && noCoverage && (
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-gray-100">
+                <MapPinOff className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-sm text-gray-700">Fuera de cobertura</p>
+                  Actualmente operamos en tu zona.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && isError && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+              <p className="font-medium">Error al verificar</p>
+              <p className="text-xs mt-1">{errorMessage}</p>
+            </div>
+          )}
+
+          <Button variant="outline" className="w-full" onClick={() => setShowMap(false)}>
+            {hasCoverage ? "Volver" : "Cancelar"}
+          </Button>
+        </div>
+      )
+    }
+
     if (isLoading) {
       return (
         <div className="flex flex-col items-center gap-4 py-8">
@@ -137,10 +211,16 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
             </div>
           )}
 
-          <Button variant="outline" className="w-full" onClick={handleDetect}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Verificar de nuevo
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full" onClick={handleDetect}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Verificar de nuevo
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setShowMap(true)}>
+              <MapPin className="h-4 w-4 mr-2" />
+              Seleccionar en el mapa
+            </Button>
+          </div>
         </div>
       );
     }
@@ -153,14 +233,20 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
             <div className="text-center">
               <p className="font-semibold">Fuera de cobertura</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Actualmente operamos en el área de Cuenca.
+                Actualmente operamos en tu zona.
               </p>
             </div>
           </div>
-          <Button variant="outline" className="w-full" onClick={handleDetect}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Verificar de nuevo
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full" onClick={handleDetect}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Verificar de nuevo
+            </Button>
+            <Button className="w-full" onClick={() => setShowMap(true)}>
+              <MapPin className="h-4 w-4 mr-2" />
+              Seleccionar en el mapa manualmente
+            </Button>
+          </div>
         </div>
       );
     }
@@ -175,9 +261,15 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
               <p className="text-sm text-muted-foreground mt-1">{errorMessage}</p>
             </div>
           </div>
-          <Button className="w-full" onClick={handleDetect}>
-            Reintentar
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button className="w-full" onClick={handleDetect}>
+              Reintentar
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setShowMap(true)}>
+              <MapPin className="h-4 w-4 mr-2" />
+              Seleccionar ubicación manualmente
+            </Button>
+          </div>
         </div>
       );
     }
@@ -188,11 +280,13 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Verificar Cobertura</DialogTitle>
           <DialogDescription>
-            Detectamos tu ubicación para verificar si hay cobertura de envío en tu zona.
+            {showMap
+              ? "Haz clic en el mapa para seleccionar tu ubicación exacta."
+              : "Detectamos tu ubicación para verificar si hay cobertura de envío en tu zona."}
           </DialogDescription>
         </DialogHeader>
         {renderContent()}
