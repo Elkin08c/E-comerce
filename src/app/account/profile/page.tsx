@@ -1,6 +1,4 @@
 "use client";
-import { authService } from "@/lib/services/auth.service";
-
 import { useQuery } from "@apollo/client/react";
 import { GET_CUSTOMER } from "@/graphql/queries";
 import { useEffect, useState } from "react";
@@ -22,12 +20,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
-      return;
     }
-    
-    authService.getProfile().catch(() => {
-      router.push("/login");
-    });
   }, [router, isAuthenticated]);
 
   const customerId = user?.id;

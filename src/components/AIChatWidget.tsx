@@ -126,20 +126,33 @@ export function AIChatWidget() {
 
       {/* Widget de chat */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-background border rounded-lg shadow-2xl flex flex-col z-50 animate-in slide-in-from-bottom-4 fade-in">
+        <div
+          className={cn(
+            "fixed bottom-4 right-4 md:bottom-6 md:right-6",
+            "w-[calc(100vw-32px)] md:w-96",
+            "max-h-[calc(100dvh-32px)] md:max-h-[700px]",
+            "h-[600px] bg-background/95 border rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden",
+            "animate-in slide-in-from-bottom-6 duration-500 ease-out fill-mode-forwards"
+          )}
+        >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground rounded-t-lg">
-            <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              <h3 className="font-semibold">Asistente de Ventas IA</h3>
+          <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/95 to-primary/80 text-primary-foreground backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary-foreground/20 p-2 rounded-full">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm leading-none">Asistente de Ventas</h3>
+                <span className="text-[10px] opacity-80 uppercase tracking-wider font-medium">Siempre activo</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {messages.length > 0 && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleNewConversation}
-                  className="h-8 w-8 hover:bg-primary-foreground/20"
+                  className="h-8 w-8 hover:bg-primary-foreground/20 rounded-full transition-colors"
                   title="Nueva conversación"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -149,7 +162,7 @@ export function AIChatWidget() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleChat}
-                className="h-8 w-8 hover:bg-primary-foreground/20"
+                className="h-8 w-8 hover:bg-primary-foreground/20 rounded-full transition-colors"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -157,36 +170,42 @@ export function AIChatWidget() {
           </div>
 
           {/* Mensajes */}
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <MessageCircle className="h-12 w-12 mb-4 opacity-50" />
-                <p className="text-sm">
-                  ¡Hola! Soy tu asistente de ventas.
-                  <br />
-                  Puedo ayudarte a buscar productos, consultar precios y
-                  verificar disponibilidad.
-                </p>
-              </div>
-            ) : (
-              <>
-                {messages.map((message) => (
-                  <ChatMessage
-                    key={message.id}
-                    role={message.role}
-                    content={message.content}
-                    timestamp={message.timestamp}
-                  />
-                ))}
-                {isLoading && (
-                  <div className="flex items-center gap-2 text-muted-foreground mb-4">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm">El agente está escribiendo...</span>
+          <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+            <div className="p-4 space-y-2">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center px-6">
+                  <div className="bg-primary/5 p-4 rounded-full mb-4">
+                    <MessageCircle className="h-10 w-10 text-primary opacity-40" />
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </>
-            )}
+                  <h4 className="font-bold text-foreground mb-2">¡Bienvenido!</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Soy tu asistente inteligente. Pregúntame sobre productos, ofertas o disponibilidad en tiempo real.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      role={message.role}
+                      content={message.content}
+                      timestamp={message.timestamp}
+                    />
+                  ))}
+                  {isLoading && (
+                    <div className="flex items-center gap-3 text-muted-foreground mb-6 animate-pulse pl-2">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                        <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></span>
+                      </div>
+                      <span className="text-xs font-medium tracking-wide">Escribiendo...</span>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} className="h-2" />
+                </>
+              )}
+            </div>
           </ScrollArea>
 
           {/* Error */}
@@ -197,25 +216,28 @@ export function AIChatWidget() {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t">
-            <div className="flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Escribe tu mensaje..."
-                disabled={isLoading}
-                className="flex-1"
-              />
+          <div className="p-4 border-t bg-background/50 backdrop-blur-sm">
+            <div className="flex gap-2 items-end">
+              <div className="flex-1 relative">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Hacer una pregunta..."
+                  disabled={isLoading}
+                  className="pr-10 bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/30 transition-all resize-none min-h-[44px] max-h-[120px]"
+                />
+              </div>
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
                 size="icon"
+                className="h-[44px] w-[44px] rounded-xl shadow-md transition-all hover:shadow-lg active:scale-95"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-5 w-5" />
                 )}
               </Button>
             </div>

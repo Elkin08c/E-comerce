@@ -1,6 +1,4 @@
 "use client";
-import { authService } from "@/lib/services/auth.service";
-
 import { useQuery } from "@apollo/client/react";
 import { GET_CUSTOMER_ORDERS } from "@/graphql/queries";
 import { useEffect, useState } from "react";
@@ -31,13 +29,7 @@ export default function MyOrdersPage() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
-      return;
     }
-
-    // We rely on the query to fail if not authorized, or we can check profile
-    authService.getProfile().catch(() => {
-      router.push("/login");
-    });
   }, [router, isAuthenticated]);
 
   const customerId = user?.id;

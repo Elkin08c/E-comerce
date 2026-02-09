@@ -18,10 +18,6 @@ export const authService = {
       body: JSON.stringify(credentials),
     });
   },
-  
-  getProfile: async (): Promise<any> => {
-    return apiClient("/auth/profile");
-  },
 
   logout: async (): Promise<void> => {
     return apiClient("/auth/logout", {

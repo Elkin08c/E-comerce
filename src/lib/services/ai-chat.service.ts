@@ -1,5 +1,5 @@
 // AI Chat Service - Comunicación con el microservicio de agente de ventas con IA
-const AI_API_URL = "http://localhost:8006";
+const AI_API_URL = "http://localhost:8002";
 
 export interface ChatMessage {
   id: string;
@@ -55,7 +55,7 @@ export const aiChatService = {
     } catch (error) {
       if (error instanceof TypeError) {
         throw new Error(
-          "No se pudo conectar con el agente de IA. Verifica que el servicio esté corriendo en el puerto 8006."
+          "No se pudo conectar con el agente de IA. Verifica que el servicio esté corriendo en el puerto 8002."
         );
       }
       throw error;

@@ -4,7 +4,7 @@ import { ApolloProvider } from "@apollo/client/react";
 import { client } from "@/lib/apollo";
 import { CartInitializer } from "./cart-initializer";
 
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
