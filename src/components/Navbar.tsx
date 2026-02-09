@@ -30,6 +30,7 @@ export default function Navbar() {
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const { data, loading } = useQuery<any>(GET_CATEGORIES);
    const [isScrolled, setIsScrolled] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { user, isAuthenticated, setUser, logout: logoutStore } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -42,6 +43,9 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    // Marcar como montado para evitar errores de hidratación
+    setIsMounted(true);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
     };
@@ -158,7 +162,17 @@ export default function Navbar() {
           </Button>
           <CartSheet />
 
-          {isAuthenticated ? (
+          {!isMounted ? (
+            // Durante SSR y antes de la hidratación, mostrar estado neutral
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
+                <Link href="/login">Ingresar</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/register">Registrarse</Link>
+              </Button>
+            </div>
+          ) : isAuthenticated ? (
             <DropdownMenu>
                <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
