@@ -41,7 +41,7 @@ export const CREATE_PRODUCT = gql`
       name
       sku
       salePrice
-      isActive
+      status
     }
   }
 `;
@@ -53,7 +53,7 @@ export const UPDATE_PRODUCT = gql`
       name
       sku
       salePrice
-      isActive
+      status
     }
   }
 `;
@@ -190,3 +190,61 @@ export const REMOVE_WISHLIST = gql`
   }
 `;
 
+
+// ==================== LOCALIZACIÓN (Provincias / Ciudades) ====================
+
+export const CREATE_PROVINCE = gql`
+  mutation CreateProvince($input: CreateProvinceInput!) {
+    createProvince(createProvinceInput: $input) {
+      id
+      name
+      code
+    }
+  }
+`;
+
+export const UPDATE_PROVINCE = gql`
+  mutation UpdateProvince($id: String!, $data: UpdateProvinceInput!) {
+    updateProvince(id: $id, data: $data) {
+      id
+      name
+      code
+    }
+  }
+`;
+
+export const REMOVE_PROVINCE = gql`
+  mutation RemoveProvince($id: String!) {
+    removeProvince(id: $id) {
+      id
+    }
+  }
+`;
+
+export const CREATE_CITY = gql`
+  mutation CreateCity($input: CreateCityInput!) {
+    createCity(createCityInput: $input) {
+      id
+      name
+      provinceId
+    }
+  }
+`;
+
+export const UPDATE_CITY = gql`
+  mutation UpdateCity($id: String!, $data: UpdateCityInput!) {
+    updateCity(id: $id, data: $data) {
+      id
+      name
+      provinceId
+    }
+  }
+`;
+
+export const REMOVE_CITY = gql`
+  mutation RemoveCity($id: String!) {
+    removeCity(id: $id) {
+      id
+    }
+  }
+`;

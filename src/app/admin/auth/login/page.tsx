@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +22,16 @@ export default function LoginPage() {
 
     try {
       const data = await authService.login({ email, password });
-      if (data.user) {
-        setUser({
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role,
-        });
+      if (data.user && data.accessToken) {
+        setAuth(
+          {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+          },
+          data.accessToken
+        );
       }
       router.push("/admin");
     } catch (err: unknown) {

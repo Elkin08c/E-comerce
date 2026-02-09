@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
 import {
   Users,
   Settings,
@@ -44,8 +45,8 @@ const navigation: NavItem[] = [
       { name: "Resumen", href: "/admin/logistics" },
       { name: "Zonas", href: "/admin/logistics/zones" },
       { name: "Puntos de Encuentro", href: "/admin/logistics/meeting-points" },
-      { name: "Métodos de Envío", href: "/admin/logistics/shipping-methods" },
       { name: "Empresas de Transporte", href: "/admin/logistics/transport-companies" },
+      { name: "Localizaciones", href: "/admin/logistics/locations" },
     ]
   },
   { name: "Usuarios", href: "/admin/setup/users", icon: Settings },
@@ -53,6 +54,8 @@ const navigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <div className="flex h-screen w-64 flex-col bg-gray-900 text-white">
@@ -71,23 +74,20 @@ export function Sidebar() {
               <div key={item.name}>
                 <Link
                   href={item.href}
-                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${
-                    isActive
+                  className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors ${isActive
                       ? "bg-gray-800 text-white"
                       : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <item.icon
-                    className={`mr-3 h-5 w-5 flex-shrink-0 ${
-                      isActive ? "text-white" : "text-gray-400 group-hover:text-gray-300"
-                    }`}
+                    className={`mr-3 h-5 w-5 shrink-0 ${isActive ? "text-white" : "text-gray-400 group-hover:text-gray-300"
+                      }`}
                   />
                   <span className="flex-1">{item.name}</span>
                   {item.children && (
                     <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        isExpanded ? "rotate-0" : "-rotate-90"
-                      }`}
+                      className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-0" : "-rotate-90"
+                        }`}
                     />
                   )}
                 </Link>
@@ -99,11 +99,10 @@ export function Sidebar() {
                         <Link
                           key={child.href}
                           href={child.href}
-                          className={`block pl-10 pr-2 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                            isChildActive
+                          className={`block pl-10 pr-2 py-1.5 text-xs font-medium rounded-md transition-colors ${isChildActive
                               ? "bg-gray-700 text-white"
                               : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                          }`}
+                            }`}
                         >
                           {child.name}
                         </Link>
@@ -121,9 +120,11 @@ export function Sidebar() {
           onClick={async () => {
             await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
               method: 'POST',
+              credentials: 'include',
               headers: { 'Content-Type': 'application/json' }
-            }).catch(() => {});
-            window.location.href = "/admin/auth/login";
+            }).catch(() => { });
+            logout();
+            router.replace("/admin/auth/login");
           }}
           className="group flex w-full items-center px-2 py-2 text-sm font-medium text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
         >

@@ -15,7 +15,6 @@ export const GET_PRODUCTS = gql`
           status
           hasVariants
           isFeatured
-          isActive
           tags
           categoryId
         }
@@ -36,7 +35,6 @@ export const GET_PRODUCT = gql`
       status
       hasVariants
       isFeatured
-      isActive
       tags
       categoryId
       metaTitle
@@ -47,7 +45,6 @@ export const GET_PRODUCT = gql`
         sku
         salePrice
         costPrice
-        isActive
         attributes {
           color
           storage
@@ -99,12 +96,8 @@ export const GET_ORDERS = gql`
           orderNumber
           totalAmount
           status
+          customerId
           createdAt
-          customer {
-            firstName
-            lastName
-            email
-          }
         }
       }
     }
@@ -228,6 +221,35 @@ export const GET_CUSTOMER_ADDRESSES = gql`
           isActive
         }
       }
+    }
+  }
+`;
+
+// ==================== GEOGRAFÍA (Provincias / Ciudades) ====================
+
+export const GET_PROVINCES = gql`
+  query GetProvinces {
+    allLocalizations {
+      id
+      name
+      code
+      cities {
+        id
+        name
+        provinceId
+        isActive
+      }
+    }
+  }
+`;
+
+export const GET_CITIES_BY_PROVINCE = gql`
+  query GetCitiesByProvince($provinceId: String!) {
+    cityByProvince(provinceId: $provinceId) {
+      id
+      name
+      provinceId
+      isActive
     }
   }
 `;

@@ -1,13 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { useQuery } from "@apollo/client/react";
-import { GET_CATEGORIES } from "@/graphql/queries";
-import { ShoppingBag, Search, User, Menu, ShoppingCart, Loader2, MapPin } from "lucide-react";
+import CoverageChecker from "@/components/CoverageChecker";
+import { CartSheet } from "@/components/cart/CartSheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { customerAuthService } from "@/lib/services/customer-auth.service";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,14 +11,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useEffect, useState } from "react";
-import { useCartStore } from "@/store/cart";
+import { GET_CATEGORIES } from "@/graphql/queries";
+import { customerAuthService } from "@/lib/services/customer-auth.service";
 import { useAuthStore } from "@/store/auth";
-import { CartSheet } from "@/components/cart/CartSheet";
-import CoverageChecker from "@/components/CoverageChecker";
+import { useCartStore } from "@/store/cart";
 import { useLocationStore } from "@/store/location";
+import { useQuery } from "@apollo/client/react";
+import { Loader2, MapPin, Menu, Search, ShoppingBag, ShoppingCart, User } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const { toggleCart, items } = useCartStore();
@@ -151,7 +151,7 @@ export default function Navbar() {
             <Search className="h-5 w-5 md:hidden" />
             <ShoppingCart className="h-5 w-5 hidden md:block" />
             <span className="sr-only">Carrito</span>
-            {cartCount > 0 && (
+            {isMounted && cartCount > 0 && (
                 <>
                     <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-primary rounded-full md:hidden" />
                     <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-[10px] font-bold text-primary-foreground rounded-full flex items-center justify-center hidden md:flex">
@@ -226,8 +226,13 @@ export default function Navbar() {
 
 function LocationDot() {
   const { status, primaryZone } = useLocationStore();
+  const [mounted, setMounted] = useState(false);
 
-  if (status !== "resolved") return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || status !== "resolved") return null;
 
   const dotColor = !primaryZone
     ? "bg-gray-400"

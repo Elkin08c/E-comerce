@@ -1,0 +1,27 @@
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      # Monta el código fuente para hot reload
+      - .:/app
+      - /app/node_modules
+      # Usar volumen nombrado para .next para evitar problemas de permisos
+      - nextjs_cache:/app/.next
+    networks:
+      - tesis-network
+    restart: unless-stopped
+    command: pnpm dev
+
+networks:
+  tesis-network:
+    external: true
+
+volumes:
+  nextjs_cache:

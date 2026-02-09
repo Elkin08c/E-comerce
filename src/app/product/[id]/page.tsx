@@ -14,6 +14,44 @@ import { useCartStore } from "@/store/cart";
 import { toast } from "sonner";
 import { useState } from "react";
 
+// Define manual types for the product query
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  salePrice: number;
+  costPrice: number;
+  status: string;
+  hasVariants: boolean;
+  isFeatured: boolean;
+  tags: string[];
+  categoryId: string;
+  metaTitle: string;
+  metaDescription: string;
+  variants: {
+    id: string;
+    name: string;
+    sku: string;
+    salePrice: number;
+    costPrice: number;
+    attributes: {
+      color?: string;
+      storage?: string;
+      size?: string;
+      material?: string;
+      other?: string;
+    };
+  }[];
+  stock: number;
+  basePrice: number;
+  sku: string;
+}
+
+interface GetProductQuery {
+  product: Product;
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const id = params?.id as string;
@@ -21,10 +59,12 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
-  const { data, loading, error } = useQuery(GET_PRODUCT, {
+  const { data, loading, error } = useQuery<GetProductQuery>(GET_PRODUCT, {
     variables: { id },
     skip: !id,
   });
+
+  const product = data?.product || null;
 
   if (loading) {
     return (
@@ -52,32 +92,35 @@ export default function ProductDetailPage() {
     );
   }
 
-  const product = data?.product;
-  
   // Stock validation
   const isOutOfStock = product?.stock === 0;
-  const isLowStock = product?.stock > 0 && product?.stock <= 5;
+  const isLowStock = product?.stock && product.stock > 0 && product.stock <= 5;
   const maxQuantity = product?.stock || 0;
-  
+
   // Handle add to cart with validation
   const handleAddToCart = async () => {
+    if (!product) {
+      toast.error("Producto no encontrado");
+      return;
+    }
+
     if (isOutOfStock) {
       toast.error("Producto sin stock");
       return;
     }
-    
+
     if (quantity > maxQuantity) {
       toast.error(`Solo hay ${maxQuantity} unidades disponibles`);
       return;
     }
-    
+
     setIsAdding(true);
     try {
       await addItem({
         id: product.id,
         name: product.name,
-        price: product.basePrice,
-        salePrice: product.salePrice,
+        price: product.basePrice || 0,
+        salePrice: product.salePrice || 0,
         quantity: quantity,
       });
       toast.success(`${quantity} ${quantity === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
@@ -87,7 +130,7 @@ export default function ProductDetailPage() {
       setIsAdding(false);
     }
   };
-  
+
   if (!product) {
     return (
       <div className="min-h-screen bg-background flex flex-col">

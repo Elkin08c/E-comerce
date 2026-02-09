@@ -69,7 +69,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="group relative border-none shadow-none hover:shadow-xl transition-all duration-300 overflow-hidden bg-card/50 backdrop-blur-sm">
       <CardHeader className="p-0">
-        <div className="aspect-[4/5] relative bg-secondary/20 overflow-hidden flex items-center justify-center">
+        <div className="aspect-4/5 relative bg-secondary/20 overflow-hidden flex items-center justify-center">
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
             {isOutOfStock && (
               <span className="bg-gray-800 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-sm w-fit">

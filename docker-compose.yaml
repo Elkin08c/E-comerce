@@ -1,0 +1,26 @@
+services:
+  front:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    env_file:
+      - .env.production
+    environment:
+      # URLs internas de Docker para los rewrites de Next.js (server-side only)
+      - INTERNAL_API_URL=http://api:8000
+      - INTERNAL_AI_URL=http://ecommerce_ai_app:8002
+    networks:
+      - tesis-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  tesis-network:
+    external: true

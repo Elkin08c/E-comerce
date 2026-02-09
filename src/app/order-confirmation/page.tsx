@@ -9,8 +9,17 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import confetti from "canvas-confetti";
+import { Suspense } from "react";
 
-export default function OrderConfirmationPage() {
+export default function OrderConfirmationPageWrapper() {
+  return (
+    <Suspense fallback={<div className='flex justify-center items-center min-h-screen'>Cargando...</div>}>
+      <OrderConfirmationPage />
+    </Suspense>
+  );
+}
+
+function OrderConfirmationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");

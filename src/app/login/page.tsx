@@ -26,7 +26,7 @@ export default function CustomerLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,13 +37,16 @@ export default function CustomerLoginPage() {
        const data = await customerAuthService.login({ email, password });
 
       // Primero actualizar el estado de autenticación
-      if (data.customer) {
-        setUser({
-          id: data.customer.id,
-          name: `${data.customer.firstName} ${data.customer.lastName}`.trim(),
-          email: data.customer.email,
-          role: data.customer.role,
-        });
+      if (data.customer && data.accessToken) {
+        setAuth(
+          {
+            id: data.customer.id,
+            name: `${data.customer.firstName} ${data.customer.lastName}`.trim(),
+            email: data.customer.email,
+            role: data.customer.role,
+          },
+          data.accessToken
+        );
       }
 
       // Luego sincronizar el carrito local con el servidor

@@ -1,0 +1,10 @@
+schema: ./src/graphql/schema.graphql
+  documents: ./src/graphql/**/*.ts
+  generates:
+    ./src/graphql/generated/graphql.ts:
+      plugins:
+        - typescript
+        - typescript-operations
+  config:
+    skipTypename: false
+    enumsAsTypes: true

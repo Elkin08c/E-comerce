@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Instagram, Linkedin, Send } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Facebook, Send } from "lucide-react";
+import Link from "next/link";
 
-import { useQuery } from "@apollo/client/react";
 import { GET_CATEGORIES } from "@/graphql/queries";
+import { useQuery } from "@apollo/client/react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -26,15 +26,6 @@ export default function Footer() {
             <div className="flex gap-4 pt-2">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
                 <Facebook className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
-                <Linkedin className="h-4 w-4" />
               </Button>
             </div>
           </div>

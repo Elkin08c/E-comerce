@@ -1,7 +1,7 @@
 "use client";
 
-import { useQuery } from "@apollo/client/react";
 import { GET_ORDERS } from "@/graphql/queries";
+import { useQuery } from "@apollo/client/react";
 
 export default function OrdersPage() {
   const { data, loading, error } = useQuery<any>(GET_ORDERS, { variables: { first: 20 } }); // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -31,8 +31,7 @@ export default function OrdersPage() {
               <tr key={node.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{node.orderNumber}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {node.customer?.firstName} {node.customer?.lastName}
-                    <div className="text-xs text-gray-400">{node.customer?.email}</div>
+                    <span className="font-mono text-xs">{node.customerId}</span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${node.totalAmount}</td>
                 <td className="px-6 py-4 whitespace-nowrap">

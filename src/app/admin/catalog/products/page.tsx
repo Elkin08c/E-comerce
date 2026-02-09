@@ -1,29 +1,5 @@
 "use client";
 
-import { useQuery, useMutation } from "@apollo/client/react";
-import { GET_PRODUCTS, GET_CATEGORIES } from "@/graphql/queries";
-import { CREATE_PRODUCT, UPDATE_PRODUCT, REMOVE_PRODUCT } from "@/graphql/mutations";
-import { useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +11,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CREATE_PRODUCT, REMOVE_PRODUCT, UPDATE_PRODUCT } from "@/graphql/mutations";
+import { GET_CATEGORIES, GET_PRODUCTS } from "@/graphql/queries";
+import { useMutation, useQuery } from "@apollo/client/react";
+import { Loader2, Package, Pencil, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const { data, loading, error, refetch } = useQuery<any>(GET_PRODUCTS, { variables: { first: 50 }, fetchPolicy: "network-only" });
@@ -52,10 +52,9 @@ export default function ProductsPage() {
     name: "",
     slug: "",
     sku: "",
-    basePrice: "",
+    salePrice: "",
     categoryId: "",
     description: "",
-    isActive: true
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -70,12 +69,11 @@ export default function ProductsPage() {
       setEditingProduct(product);
       setFormData({
         name: product.name,
-        slug: product.slug || "", // slug might not be in query, handle carefully or assume generated
+        slug: product.slug || "",
         sku: product.sku,
-        basePrice: product.basePrice.toString(),
+        salePrice: (product.salePrice ?? 0).toString(),
         categoryId: product.categoryId || (catData?.categories?.edges[0]?.node?.id || ""), 
         description: product.description || "",
-        isActive: product.isActive
       });
     } else {
       resetForm();
@@ -92,7 +90,7 @@ export default function ProductsPage() {
         const updateData: any = {
             name: formData.name,
             sku: formData.sku,
-            basePrice: parseFloat(formData.basePrice),
+            salePrice: parseFloat(formData.salePrice),
             description: formData.description
         };
         
@@ -117,9 +115,9 @@ export default function ProductsPage() {
             createProductInput: {
               categoryId: formData.categoryId,
               name: formData.name,
-              slug: formData.name.toLowerCase().replace(/ /g, '-'), // Auto-generate slug for simplicity
+              slug: formData.name.toLowerCase().replace(/ /g, '-'),
               sku: formData.sku,
-              basePrice: parseFloat(formData.basePrice),
+              salePrice: parseFloat(formData.salePrice),
               description: formData.description,
               tags: ["general"] // Default tag
             }
@@ -185,10 +183,10 @@ export default function ProductsPage() {
                     </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{node.sku}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">${node.basePrice.toFixed(2)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">${(node.salePrice ?? 0).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${node.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                    {node.isActive ? "Activo" : "Inactivo"}
+                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${node.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+                    {node.status === "ACTIVE" ? "Activo" : (node.status === "DRAFT" ? "Borrador" : node.status ?? "Sin estado")}
                    </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -253,13 +251,13 @@ export default function ProductsPage() {
                     />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="price">Precio Base ($)</Label>
+                    <Label htmlFor="price">Precio de Venta ($)</Label>
                     <Input 
                         id="price" 
                         type="number"
                         step="0.01"
-                        value={formData.basePrice} 
-                        onChange={(e) => setFormData({...formData, basePrice: e.target.value})} 
+                        value={formData.salePrice} 
+                        onChange={(e) => setFormData({...formData, salePrice: e.target.value})} 
                         required 
                     />
                 </div>

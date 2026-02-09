@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
@@ -118,7 +117,6 @@ export default function CategoriesPage() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Slug</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
@@ -127,11 +125,6 @@ export default function CategoriesPage() {
               <tr key={node.id} className="hover:bg-muted/50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{node.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{node.slug}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${node.isActive ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100" : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"}`}>
-                    {node.isActive ? "Activo" : "Inactivo"}
-                   </span>
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(node)}>

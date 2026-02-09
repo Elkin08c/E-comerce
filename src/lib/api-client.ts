@@ -1,3 +1,5 @@
+import { useAuthStore } from "@/store/auth";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 interface RequestOptions extends RequestInit {
@@ -9,16 +11,23 @@ export const apiClient = async <T>(
   options: RequestOptions = {}
 ): Promise<T> => {
   const { params, headers, ...customConfig } = options;
-  
+
   const url = new URL(`${API_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`);
-  
+
   if (params) {
     Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
   }
 
-  // No se requiere recuperar token de localStorage, el backend usa cookies HttpOnly
+  // Obtener el token del store de autenticación
+  const accessToken = useAuthStore.getState().accessToken;
+
+  if (!accessToken && !endpoint.includes("/auth/")) {
+    console.warn(`[apiClient] No accessToken found for request to ${endpoint}`);
+  }
+
   const defaultHeaders: HeadersInit = {
     "Content-Type": "application/json",
+    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
 
   const config: RequestInit = {
@@ -34,19 +43,19 @@ export const apiClient = async <T>(
   try {
     const response = await fetch(url.toString(), config);
 
+    // En caso de 401, limpiar el estado de auth y dejar que el layout guard maneje la redirección
     if (response.status === 401 && typeof window !== "undefined") {
-      const isAdmin = window.location.pathname.startsWith("/admin");
-      const loginPath = isAdmin ? "/admin/auth/login" : "/login";
-      
-      // Evitar loop si ya estamos en login
-      if (!window.location.pathname.includes(loginPath)) {
-        window.location.href = loginPath;
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath.includes("/auth/login") || currentPath === "/login";
+
+      if (!isLoginPage) {
+        useAuthStore.getState().logout();
       }
     }
 
     let data: any = null;
     const contentType = response.headers.get("content-type");
-    
+
     if (response.status !== 204 && contentType && contentType.includes("application/json")) {
       const text = await response.text();
       if (text) {

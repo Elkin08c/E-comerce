@@ -3,12 +3,12 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   logisticsService,
-  MeetingPoint,
-  Zone,
-  CreateMeetingPointDto,
-  UpdateMeetingPointDto,
+  type MeetingPoint,
+  type Zone,
+  type CreateMeetingPointDto,
+  type UpdateMeetingPointDto,
 } from "@/lib/services/logistics.service";
-import { Plus, Pencil, Trash2, Loader2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Search, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import MeetingPointMap from "@/components/maps/meetingPoints/MeetingPointMap";
+import MeetingPointsList from "@/components/maps/meetingPoints/MeetingPointsList";
 import { toast } from "sonner";
 
 const emptyForm = {
@@ -65,6 +67,16 @@ export default function MeetingPointsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPoint, setEditingPoint] = useState<MeetingPoint | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+
+  // Estado para integración con el mapa
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
+  const [selectedZoneIdForMap, setSelectedZoneIdForMap] = useState<
+    string | null
+  >(null);
+  const [tempMarker, setTempMarker] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,6 +139,16 @@ export default function MeetingPointsPage() {
       resetForm();
     }
     setIsDialogOpen(true);
+
+    // Cuando abrimos el diálogo para crear/editar, mostrar el marcador en el mapa
+    if (point) {
+      setTempMarker({ lat: point.latitude, lng: point.longitude });
+      setSelectedPointId(point.id);
+      setSelectedZoneIdForMap(point.zoneId);
+    } else {
+      setTempMarker(null);
+      setSelectedPointId(null);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -190,8 +212,26 @@ export default function MeetingPointsPage() {
     const zone = zones.find((z) => z.id === zoneId);
     return zone?.name || zoneId;
   };
+  const handleMapClick = (lat: number, lng: number) => {
+    setTempMarker({ lat, lng });
+    setFormData((prev) => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lng.toString(),
+    }));
+  };
 
-  if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin" /></div>;
+  const handleMapMarkerClick = (point: MeetingPoint) => {
+    setSelectedPointId(point.id);
+    setSelectedZoneIdForMap(point.zoneId);
+  };
+
+  if (loading)
+    return (
+      <div className="p-8 flex justify-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
   if (error) return <div className="p-8 text-destructive">Error: {error}</div>;
 
   return (
@@ -232,97 +272,184 @@ export default function MeetingPointsPage() {
         </div>
       </div>
 
-      <div className="bg-card shadow-sm rounded-lg overflow-hidden border">
-        <table className="min-w-full divide-y divide-border">
-          <thead className="bg-muted/50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Nombre</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Zona</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Dirección</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Teléfono</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Disponible</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="bg-card divide-y divide-border">
-            {filteredPoints.map((point) => (
-              <tr key={point.id} className="hover:bg-muted/50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{point.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {point.zone?.name || getZoneName(point.zoneId)}
-                </td>
-                <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
-                  {point.address}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                  {point.contactPhone || "—"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleAvailability(point.id)}
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                      point.isAvailable
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Columna izquierda: mapa */}
+        <div className="bg-card rounded-lg shadow-sm border p-4 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-[#1559ED]" />
+              Mapa de puntos de encuentro
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              Haz clic en el mapa para elegir coordenadas
+            </span>
+          </div>
+          <div className="w-full h-105">
+            <MeetingPointMap
+              meetingPoints={points}
+              selectedPointId={selectedPointId}
+              onMapClick={handleMapClick}
+              onMarkerClick={handleMapMarkerClick}
+              tempMarker={tempMarker || undefined}
+              selectedZone={
+                selectedZoneIdForMap
+                  ? zones.find((z) => z.id === selectedZoneIdForMap) || null
+                  : null
+              }
+              allZones={zones}
+            />
+          </div>
+        </div>
+
+        {/* Columna derecha: lista / tabla usando el componente reutilizable */}
+        <div className="space-y-4">
+          <div className="bg-card shadow-sm rounded-lg overflow-hidden border">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-muted/50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Nombre
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Zona
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Dirección
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Teléfono
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Disponible
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-card divide-y divide-border">
+                {filteredPoints.map((point) => (
+                  <tr
+                    key={point.id}
+                    className={`hover:bg-muted/50 ${
+                      selectedPointId === point.id ? "bg-blue-50" : ""
                     }`}
+                    onClick={() => {
+                      setSelectedPointId(point.id);
+                      setSelectedZoneIdForMap(point.zoneId);
+                      setTempMarker({
+                        lat: point.latitude,
+                        lng: point.longitude,
+                      });
+                    }}
                   >
-                    {point.isAvailable ? "Sí" : "No"}
-                  </Button>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    point.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}>
-                    {point.isActive ? "Activo" : "Inactivo"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(point)}>
-                      <Pencil className="h-4 w-4 text-blue-500" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {point.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                      {point.zone?.name || getZoneName(point.zoneId)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate">
+                      {point.address}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                      {point.contactPhone || "—"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void handleToggleAvailability(point.id);
+                        }}
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                          point.isAvailable
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {point.isAvailable ? "Sí" : "No"}
+                      </Button>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenDialog(point);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4 text-blue-500" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente el punto de encuentro &quot;{point.name}&quot;.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => handleDelete(point.id)}
-                          >
-                            Eliminar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filteredPoints.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
-                  {points.length === 0
-                    ? "No hay puntos de encuentro configurados"
-                    : "No se encontraron resultados para los filtros aplicados"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                ¿Estás seguro?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción no se puede deshacer. Esto eliminará
+                                permanentemente el punto de encuentro
+                                &quot;{point.name}&quot;.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => handleDelete(point.id)}
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {filteredPoints.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-6 py-8 text-center text-muted-foreground"
+                    >
+                      {points.length === 0
+                        ? "No hay puntos de encuentro configurados"
+                        : "No se encontraron resultados para los filtros aplicados"}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Lista resumida reutilizando el componente antiguo para una vista más compacta */}
+          <MeetingPointsList
+            meetingPoints={points}
+            selectedPointId={selectedPointId}
+            onPointSelect={(p) => {
+              setSelectedPointId(p.id);
+              setSelectedZoneIdForMap(p.zoneId);
+              setTempMarker({ lat: p.latitude, lng: p.longitude });
+            }}
+            onPointDelete={handleDelete}
+            onPointEdit={(p) => handleOpenDialog(p)}
+            filteredZoneId={filterZoneId === "all" ? null : filterZoneId}
+          />
+        </div>
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

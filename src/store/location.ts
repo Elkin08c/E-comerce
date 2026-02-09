@@ -1,6 +1,6 @@
+import { Zone, logisticsService } from '@/lib/services/logistics.service';
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { logisticsService, Zone } from '@/lib/services/logistics.service';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 type LocationStatus = 'idle' | 'requesting' | 'loading' | 'resolved' | 'denied' | 'unavailable' | 'error';
 
@@ -59,8 +59,21 @@ export const useLocationStore = create<LocationState>()(
                 status: 'resolved',
                 lastDetectedAt: Date.now(),
               });
-            } catch {
-              set({ status: 'error', errorMessage: 'Error al consultar zonas de cobertura' });
+            } catch (error) {
+              const message = error instanceof Error ? error.message : '';
+              const isNoZoneFound = message.includes('No se encontró una zona');
+
+              if (isNoZoneFound) {
+                // Sin cobertura: permitir continuar en el ecommerce
+                set({
+                  zones: [],
+                  primaryZone: null,
+                  status: 'resolved',
+                  lastDetectedAt: Date.now(),
+                });
+              } else {
+                set({ status: 'error', errorMessage: 'Error al consultar zonas de cobertura' });
+              }
             }
           },
           (error) => {

@@ -11,6 +11,7 @@ import {
   Building2,
   ArrowRight,
   Loader2,
+  Globe,
 } from "lucide-react";
 
 export default function LogisticsPage() {
@@ -64,20 +65,20 @@ export default function LogisticsPage() {
       href: "/admin/logistics/transport-companies",
     },
     {
-      label: "Métodos de Envío",
-      value: overview?.totalShippingMethods || 0,
-      icon: Send,
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600",
-      href: "/admin/logistics/shipping-methods",
-    },
-    {
       label: "Puntos de Encuentro",
       value: overview?.totalMeetingPoints || 0,
       icon: Navigation,
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
       href: "/admin/logistics/meeting-points",
+    },
+    {
+      label: "Provincias y Ciudades",
+      value: overview?.totalProvinces || 0,
+      icon: Globe,
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-600",
+      href: "/admin/logistics/locations",
     },
   ];
 
@@ -89,14 +90,6 @@ export default function LogisticsPage() {
       href: "/admin/logistics/zones",
       color: "text-blue-600",
       bg: "bg-blue-50",
-    },
-    {
-      title: "Métodos de Envío",
-      description: "Configura los métodos de entrega disponibles y sus costos.",
-      icon: Send,
-      href: "/admin/logistics/shipping-methods",
-      color: "text-purple-600",
-      bg: "bg-purple-50",
     },
     {
       title: "Puntos de Encuentro",
@@ -113,6 +106,14 @@ export default function LogisticsPage() {
       href: "/admin/logistics/transport-companies",
       color: "text-green-600",
       bg: "bg-green-50",
+    },
+    {
+      title: "Provincias y Ciudades",
+      description: "Administra las regiones geográficas para la zonificación.",
+      icon: Globe,
+      href: "/admin/logistics/locations",
+      color: "text-purple-600",
+      bg: "bg-purple-50",
     },
   ];
 
