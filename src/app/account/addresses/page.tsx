@@ -16,9 +16,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, MapPin, Plus, Pencil, Trash2 } from "lucide-react";
+import { Loader2, MapPin, Plus, Pencil, Trash2, Locate } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/auth";
+import { useLocationStore } from "@/store/location";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -247,13 +248,10 @@ export default function AddressesPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="zoneId">Zona ID</Label>
-                    <Input
-                      id="zoneId"
+                    <Label htmlFor="zoneId">Zona de envío</Label>
+                    <ZoneDetectField
                       value={formData.zoneId}
-                      onChange={(e) => setFormData({ ...formData, zoneId: e.target.value })}
-                      placeholder="ID de la zona"
-                      required
+                      onChange={(zoneId) => setFormData({ ...formData, zoneId })}
                     />
                   </div>
                 </div>
@@ -369,6 +367,73 @@ export default function AddressesPage() {
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function ZoneDetectField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (zoneId: string) => void;
+}) {
+  const { primaryZone, status, detectLocation } = useLocationStore();
+
+  useEffect(() => {
+    if (primaryZone && !value) {
+      onChange(primaryZone.id);
+    }
+  }, [primaryZone, value, onChange]);
+
+  const handleDetect = () => {
+    detectLocation();
+  };
+
+  const isLoading = status === "requesting" || status === "loading";
+  const zoneName = primaryZone && value === primaryZone.id ? primaryZone.name : null;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input
+          id="zoneId"
+          value={zoneName || value}
+          readOnly={!!zoneName}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Usa el botón para detectar tu zona"
+          className="flex-1"
+          required
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={handleDetect}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Locate className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+      {zoneName && (
+        <p className="text-sm text-green-600">
+          Zona detectada: {zoneName}
+        </p>
+      )}
+      {status === "resolved" && !primaryZone && (
+        <p className="text-sm text-muted-foreground">
+          Fuera de cobertura. Ingresa el ID manualmente.
+        </p>
+      )}
+      {(status === "denied" || status === "error" || status === "unavailable") && (
+        <p className="text-sm text-destructive">
+          No se pudo detectar la zona. Ingresa el ID manualmente.
+        </p>
+      )}
     </div>
   );
 }

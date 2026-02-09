@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@apollo/client/react";
 import { GET_CATEGORIES } from "@/graphql/queries";
-import { ShoppingBag, Search, User, Menu, ShoppingCart, Loader2 } from "lucide-react";
+import { ShoppingBag, Search, User, Menu, ShoppingCart, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { customerAuthService } from "@/lib/services/customer-auth.service";
@@ -21,6 +21,8 @@ import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { useAuthStore } from "@/store/auth";
 import { CartSheet } from "@/components/cart/CartSheet";
+import CoverageChecker from "@/components/CoverageChecker";
+import { useLocationStore } from "@/store/location";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
@@ -132,6 +134,15 @@ export default function Navbar() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-2">
+          <CoverageChecker
+            trigger={
+              <Button variant="ghost" size="icon" className="relative">
+                <MapPin className="h-5 w-5" />
+                <span className="sr-only">Verificar cobertura</span>
+                <LocationDot />
+              </Button>
+            }
+          />
           <Button variant="ghost" size="icon" className="relative" onClick={toggleCart}>
             <Search className="h-5 w-5 md:hidden" />
             <ShoppingCart className="h-5 w-5 hidden md:block" />
@@ -196,5 +207,23 @@ export default function Navbar() {
         </div>
       </div>
     </header>
+  );
+}
+
+function LocationDot() {
+  const { status, primaryZone } = useLocationStore();
+
+  if (status !== "resolved") return null;
+
+  const dotColor = !primaryZone
+    ? "bg-gray-400"
+    : primaryZone.type === "SECURE"
+      ? "bg-green-500"
+      : primaryZone.type === "RESTRICTED"
+        ? "bg-yellow-500"
+        : "bg-red-500";
+
+  return (
+    <span className={`absolute top-1.5 right-1.5 h-2 w-2 rounded-full ${dotColor}`} />
   );
 }

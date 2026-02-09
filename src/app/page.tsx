@@ -5,7 +5,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
+import { ArrowRight, Star, Truck, ShieldCheck, RefreshCw, Loader2, MapPinOff, CheckCircle2 } from "lucide-react";
+import { useLocationStore } from "@/store/location";
 
 export default function StorefrontHome() {
   return (
@@ -42,10 +43,7 @@ export default function StorefrontHome() {
                 </div>
                 
                 <div className="pt-12 flex items-center justify-center lg:justify-start gap-8 lg:gap-12 text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-                    <div className="flex items-center gap-3">
-                        <Truck className="h-5 w-5 text-primary" />
-                        <span>Envíos a Nivel Cuenca</span>
-                    </div>
+                    <CoverageCTA />
                      <div className="flex items-center gap-3">
                         <ShieldCheck className="h-5 w-5 text-primary" />
                         <span>Garantía de por Vida</span>
@@ -101,6 +99,57 @@ export default function StorefrontHome() {
 
       {/* Footer */}
       <Footer />
+    </div>
+  );
+}
+
+function CoverageCTA() {
+  const { status, primaryZone, detectLocation } = useLocationStore();
+
+  if (status === "requesting" || status === "loading") {
+    return (
+      <div className="flex items-center gap-3">
+        <Loader2 className="h-5 w-5 text-primary animate-spin" />
+        <span>Verificando cobertura...</span>
+      </div>
+    );
+  }
+
+  if (status === "resolved" && primaryZone) {
+    return (
+      <div className="flex items-center gap-3">
+        <CheckCircle2 className="h-5 w-5 text-green-600" />
+        <span>Envío disponible: {primaryZone.name}</span>
+      </div>
+    );
+  }
+
+  if (status === "resolved" && !primaryZone) {
+    return (
+      <div className="flex items-center gap-3">
+        <MapPinOff className="h-5 w-5 text-muted-foreground" />
+        <span>Fuera de cobertura</span>
+      </div>
+    );
+  }
+
+  if (status === "idle") {
+    return (
+      <button
+        onClick={detectLocation}
+        className="flex items-center gap-3 hover:text-primary transition-colors cursor-pointer"
+      >
+        <Truck className="h-5 w-5 text-primary" />
+        <span>Verifica tu cobertura</span>
+      </button>
+    );
+  }
+
+  // denied / unavailable / error — show static fallback
+  return (
+    <div className="flex items-center gap-3">
+      <Truck className="h-5 w-5 text-primary" />
+      <span>Envíos a Nivel Cuenca</span>
     </div>
   );
 }

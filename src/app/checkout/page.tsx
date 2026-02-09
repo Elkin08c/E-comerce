@@ -12,16 +12,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle, Locate } from "lucide-react";
 import { toast } from "sonner";
 import { logisticsService } from "@/lib/services/logistics.service";
 import { paymentProvidersService } from "@/lib/services/payment-providers.service";
 import { cartService } from "@/lib/services/cart.service";
+import { useLocationStore } from "@/store/location";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart, cartId, fetchCart } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
+  const { primaryZone: detectedZone, status: locationStatus, detectLocation } = useLocationStore();
   
   // Verificar autenticación al cargar la página
   useEffect(() => {
@@ -112,6 +114,15 @@ export default function CheckoutPage() {
       setMeetingPoints([]);
     }
   }, [selectedZone, zones]);
+
+  // Auto-seleccionar zona detectada por geolocalización
+  useEffect(() => {
+    if (detectedZone && zones.length > 0 && !selectedZone) {
+      if (zones.find((z: any) => z.id === detectedZone.id)) {
+        setSelectedZone(detectedZone.id);
+      }
+    }
+  }, [detectedZone, zones, selectedZone]);
 
   useEffect(() => {
     if (items.length === 0 && isAuthenticated) {
@@ -259,8 +270,30 @@ export default function CheckoutPage() {
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" /> Zona de Envío
               </CardTitle>
+              {detectedZone && selectedZone === detectedZone.id && (
+                <CardDescription className="text-green-600">
+                  Zona detectada automáticamente según tu ubicación
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent>
+              {locationStatus === "idle" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-4"
+                  onClick={detectLocation}
+                >
+                  <Locate className="h-4 w-4 mr-2" />
+                  Detectar mi zona
+                </Button>
+              )}
+              {(locationStatus === "requesting" || locationStatus === "loading") && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Detectando zona...
+                </div>
+              )}
                <RadioGroup value={selectedZone} onValueChange={setSelectedZone} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {zones.map((zone: any) => (
                   <div key={zone.id} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
