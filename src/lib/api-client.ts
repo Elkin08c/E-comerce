@@ -12,7 +12,8 @@ export const apiClient = async <T>(
 ): Promise<T> => {
   const { params, headers, ...customConfig } = options;
 
-  const url = new URL(`${API_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`);
+  const baseUrl = typeof window !== "undefined" ? window.location.origin : process.env.INTERNAL_API_URL || "http://localhost:8000";
+  const url = new URL(`${API_URL}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`, baseUrl);
 
   if (params) {
     Object.keys(params).forEach((key) => url.searchParams.append(key, params[key]));
