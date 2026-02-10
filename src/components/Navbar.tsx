@@ -75,25 +75,40 @@ export default function Navbar() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-              <nav className="flex flex-col gap-4 mt-8">
-                <Link href="/" className="text-lg font-semibold">
-                  Inicio
-                </Link>
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  categories.map((cat: any) => (
-                    <Link
-                      key={cat.id}
-                      href={`/category/${cat.slug}`}
-                      className="text-lg text-muted-foreground hover:text-foreground"
-                    >
-                      {cat.name}
-                    </Link>
-                  ))
-                )}
-              </nav>
+            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+              <div className="flex flex-col h-full">
+                <div className="border-b border-border pb-4 mb-6">
+                  <h2 className="text-2xl font-bold tracking-tight">MENÚ</h2>
+                  <p className="text-sm text-muted-foreground mt-1">Navegación principal</p>
+                </div>
+                <nav className="flex flex-col gap-2 flex-1">
+                  <Link 
+                    href="/" 
+                    className="text-base font-semibold py-3 px-4 rounded-lg hover:bg-secondary/50 transition-colors border-l-4 border-transparent hover:border-primary"
+                  >
+                    Inicio
+                  </Link>
+                  {loading ? (
+                    <div className="flex items-center gap-2 py-3 px-4">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm text-muted-foreground">Cargando...</span>
+                    </div>
+                  ) : (
+                    categories.map((cat: any) => (
+                      <Link
+                        key={cat.id}
+                        href={`/category/${cat.slug}`}
+                        className="text-base py-3 px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors border-l-4 border-transparent hover:border-primary"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))
+                  )}
+                </nav>
+                <div className="border-t border-border pt-4 mt-4">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Soluciones Industriales</p>
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
         ) : (

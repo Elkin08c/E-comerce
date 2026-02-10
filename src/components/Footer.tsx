@@ -21,7 +21,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-2xl font-bold tracking-tight">COAVPRO<span className="text-primary">.</span></h3>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              Tu destino experto en tecnología en Cuenca. Encuentra los mejores componentes, laptops y accesorios con garantía local.
+              Soluciones industriales de calidad en Cuenca. Equipamiento profesional, componentes y accesorios con garantía extendida.
             </p>
             <div className="flex gap-4 pt-2">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
@@ -65,8 +65,14 @@ export default function Footer() {
              <p className="text-muted-foreground text-sm mb-4">
                 Suscríbete a nuestro boletín para ofertas exclusivas y novedades.
              </p>
-             <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-                <Input type="email" placeholder="Tu correo electrónico" className="bg-secondary/50 border-0 focus-visible:ring-1" />
+             <form className="flex gap-2" onSubmit={(e) => {
+               e.preventDefault();
+               const emailInput = e.currentTarget.querySelector('input[type="email"]') as HTMLInputElement;
+               if (emailInput?.value) {
+                 window.location.href = `mailto:info@coavpro.com?subject=Suscripción al Boletín&body=Me gustaría suscribirme con el correo: ${emailInput.value}`;
+               }
+             }}>
+                <Input type="email" placeholder="Tu correo electrónico" className="bg-secondary/50 border-0 focus-visible:ring-1" required />
                 <Button size="icon" type="submit">
                     <Send className="h-4 w-4" />
                 </Button>
