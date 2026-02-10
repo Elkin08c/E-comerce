@@ -60,7 +60,7 @@ interface GetProductQuery {
 export default function ProductDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -132,6 +132,9 @@ export default function ProductDetailPage() {
         image: product.images?.[0]?.url,
       });
       toast.success(`${quantity} ${quantity === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
+      
+      // Auto-open cart after adding item
+      openCart();
     } catch (error) {
       toast.error("Error al agregar al carrito");
     } finally {
