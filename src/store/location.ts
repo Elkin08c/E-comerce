@@ -69,7 +69,14 @@ export const useLocationStore = create<LocationState>()(
 
         try {
           const response = await logisticsService.getZonesByLocation(latitude, longitude);
-          const zones = Array.isArray(response) ? response : [];
+
+          let zones: Zone[] = [];
+          if (Array.isArray(response)) {
+            zones = response;
+          } else if (response && typeof response === 'object' && 'zone' in response) {
+            // Handle { zone: ..., restrictions: ... } format
+            zones = [(response as any).zone];
+          }
 
           const sorted = [...zones].sort(
             (a, b) => (ZONE_TYPE_PRIORITY[a.type] ?? 99) - (ZONE_TYPE_PRIORITY[b.type] ?? 99)

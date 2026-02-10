@@ -33,22 +33,22 @@ const ZONE_TYPE_CONFIG = {
     icon: ShieldCheck,
     color: "text-green-600",
     bg: "bg-green-50",
-    label: "Zona Segura",
+    label: "Zona con cobertura",
     description: "Entrega directa a domicilio disponible.",
   },
   RESTRICTED: {
     icon: ShieldAlert,
     color: "text-yellow-600",
     bg: "bg-yellow-50",
-    label: "Zona Restringida",
+    label: "Zona con restricciones",
     description: "Entrega disponible con condiciones especiales.",
   },
   DANGER: {
     icon: AlertTriangle,
     color: "text-red-600",
     bg: "bg-red-50",
-    label: "Zona de Riesgo",
-    description: "Entrega en punto de encuentro seguro.",
+    label: "Zona con restricciones",
+    description: "Entrega en punto de encuentro cercano.",
   },
 } as const;
 

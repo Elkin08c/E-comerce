@@ -31,23 +31,23 @@ import { toast } from "sonner";
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCartStore();
-  
+
   // Handle optional stock field - default to available if not provided
   const stock = product.stock ?? 100; // Default to 100 if backend doesn't provide stock
   const isOutOfStock = stock === 0;
   const isLowStock = stock > 0 && stock <= 5;
-  
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isOutOfStock) {
       toast.error("Producto sin stock", {
         description: "Este producto no está disponible actualmente."
       });
       return;
     }
-    
+
     addItem({
       id: product.id,
       name: product.name,
@@ -62,8 +62,8 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   const hasDiscount = product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice;
-  const discountPercent = hasDiscount && product.salePrice 
-    ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100) 
+  const discountPercent = hasDiscount && product.salePrice
+    ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100)
     : 0;
 
   return (
@@ -90,7 +90,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Product Image */}
           <div className="group-hover:scale-105 transition-transform duration-500 w-full h-full flex items-center justify-center">
             {product.images && product.images.length > 0 ? (
-              <img 
+              <img
                 src={product.images.find(img => img.isMain)?.url || product.images[0].url}
                 alt={product.images.find(img => img.isMain)?.altText || product.name}
                 className="w-full h-full object-cover"
@@ -102,10 +102,10 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Quick Actions Overlay */}
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-            <Button 
-              variant="secondary" 
-              size="icon" 
-              className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75" 
+            <Button
+              variant="secondary"
+              size="icon"
+              className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75"
               onClick={handleAddToCart}
               disabled={isOutOfStock}
               title={isOutOfStock ? "Sin stock" : "Agregar al carrito"}
@@ -137,32 +137,24 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
         </div>
-        
-        {/* Stock Indicator */}
-        {!isOutOfStock && product.stock !== undefined && (
-          <div className="mt-3 space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Stock disponible</span>
-              <span className={`font-semibold ${
-                stock > 10 ? 'text-green-600' : 
-                stock > 5 ? 'text-yellow-600' : 
-                'text-orange-600'
-              }`}>
-                {stock} unidades
+
+        {/* Stock Status - Simplified */}
+        <div className="mt-3 flex items-center text-xs">
+          {stock > 0 ? (
+            <span className="text-green-600 font-medium flex items-center gap-1 bg-green-50 px-2 py-1 rounded-md border border-green-100">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-            </div>
-            <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-              <div 
-                className={`h-full transition-all ${
-                  stock > 10 ? 'bg-green-500' : 
-                  stock > 5 ? 'bg-yellow-500' : 
-                  'bg-orange-500'
-                }`}
-                style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+              Disponible
+            </span>
+          ) : (
+            <span className="text-destructive font-medium flex items-center gap-1 bg-destructive/10 px-2 py-1 rounded-md border border-destructive/20">
+              <span className="h-2 w-2 rounded-full bg-destructive"></span>
+              Agotado
+            </span>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

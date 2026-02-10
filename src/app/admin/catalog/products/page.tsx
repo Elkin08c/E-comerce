@@ -30,24 +30,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { CREATE_PRODUCT, REMOVE_PRODUCT, UPDATE_PRODUCT } from "@/graphql/mutations";
+import { CREATE_PRODUCT, REMOVE_PRODUCT, UPDATE_PRODUCT, CREATE_PRODUCT_IMAGE, REMOVE_PRODUCT_IMAGE } from "@/graphql/mutations";
 import { GET_CATEGORIES, GET_PRODUCTS } from "@/graphql/queries";
 import { useMutation, useQuery } from "@apollo/client/react";
 import { Loader2, Package, Pencil, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ProductImageUpload } from "@/components/admin/ProductImageUpload";
 
 export default function ProductsPage() {
   const { data, loading, error, refetch } = useQuery<any>(GET_PRODUCTS, { variables: { first: 50 }, fetchPolicy: "network-only" });
   const { data: catData } = useQuery<any>(GET_CATEGORIES);
-  
+
   const [createProduct, { loading: creating }] = useMutation(CREATE_PRODUCT);
   const [updateProduct, { loading: updating }] = useMutation(UPDATE_PRODUCT);
   const [removeProduct, { loading: removing }] = useMutation(REMOVE_PRODUCT);
 
+  const [createProductImage] = useMutation(CREATE_PRODUCT_IMAGE);
+  const [removeProductImage] = useMutation(REMOVE_PRODUCT_IMAGE);
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  
+
   const initialForm = {
     name: "",
     slug: "",
@@ -55,12 +59,17 @@ export default function ProductsPage() {
     salePrice: "",
     categoryId: "",
     description: "",
+    stock: "0",
   };
 
   const [formData, setFormData] = useState(initialForm);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [existingImagesList, setExistingImagesList] = useState<any[]>([]);
 
   const resetForm = () => {
     setFormData(initialForm);
+    setNewImages([]);
+    setExistingImagesList([]);
     setEditingProduct(null);
   };
 
@@ -72,9 +81,12 @@ export default function ProductsPage() {
         slug: product.slug || "",
         sku: product.sku,
         salePrice: (product.salePrice ?? 0).toString(),
-        categoryId: product.categoryId || (catData?.categories?.edges[0]?.node?.id || ""), 
+        categoryId: product.categoryId || (catData?.categories?.edges[0]?.node?.id || ""),
         description: product.description || "",
+        stock: (product.stock ?? 0).toString(),
       });
+      setExistingImagesList(product.images || []);
+      setNewImages([]);
     } else {
       resetForm();
     }
@@ -83,19 +95,23 @@ export default function ProductsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
+      let productId = editingProduct?.id;
+
       if (editingProduct) {
         // Update logic
         const updateData: any = {
-            name: formData.name,
-            sku: formData.sku,
-            salePrice: parseFloat(formData.salePrice),
-            description: formData.description
+          name: formData.name,
+          sku: formData.sku,
+          salePrice: parseFloat(formData.salePrice),
+          description: formData.description,
+          categoryId: formData.categoryId,
+          stock: parseInt(formData.stock)
         };
-        
+
         // Only include fields that changed or are required by update input
-        
+
         await updateProduct({
           variables: {
             id: editingProduct.id,
@@ -106,11 +122,11 @@ export default function ProductsPage() {
       } else {
         // Create logic
         if (!formData.categoryId) {
-            toast.error("Selecciona una categoría");
-            return;
+          toast.error("Selecciona una categoría");
+          return;
         }
 
-        await createProduct({
+        const res: any = await createProduct({
           variables: {
             createProductInput: {
               categoryId: formData.categoryId,
@@ -119,16 +135,58 @@ export default function ProductsPage() {
               sku: formData.sku,
               salePrice: parseFloat(formData.salePrice),
               description: formData.description,
+              stock: parseInt(formData.stock),
               tags: ["general"] // Default tag
             }
           }
         });
+        productId = res.data.createProduct.id;
         toast.success("Producto creado");
       }
+
+      // Handle Image Uploads
+      console.log("Checking image uploads...", { newImages: newImages.length, productId });
+      if (newImages.length > 0 && productId) {
+        try {
+          console.log("Uploading images...");
+          // Upload sequentially or parallel
+          const uploadPromises = newImages.map((file, index) => {
+            console.log("Uploading file:", file.name, "size:", file.size);
+            return createProductImage({
+              variables: {
+                createProductsImageInput: {
+                  productId: productId,
+                  file: file,
+                  isMain: existingImagesList.length === 0 && index === 0, // First image is main if no existing
+                  sortOrder: existingImagesList.length + index
+                }
+              }
+            });
+          });
+
+          await Promise.all(uploadPromises);
+          console.log("Images processed");
+          toast.success("Imágenes subidas");
+        } catch (imgErr) {
+          console.error("Error uploading images", imgErr);
+          toast.error("Error al subir algunas imágenes");
+        }
+      }
+
       setIsDialogOpen(false);
       refetch();
     } catch (err: any) {
       toast.error(err.message || "Error al guardar producto");
+    }
+  };
+
+  const handleRemoveImage = async (imageId: string) => {
+    try {
+      await removeProductImage({ variables: { id: imageId } });
+      setExistingImagesList(prev => prev.filter(p => p.id !== imageId));
+      toast.success("Imagen eliminada");
+    } catch (err) {
+      toast.error("Error al eliminar imagen");
     }
   };
 
@@ -138,7 +196,7 @@ export default function ProductsPage() {
       toast.success("Producto eliminado");
       refetch();
     } catch (err: any) {
-       toast.error(err.message || "Error al eliminar producto");
+      toast.error(err.message || "Error al eliminar producto");
     }
   };
 
@@ -149,11 +207,11 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6 p-6">
-       <div className="flex justify-between items-center bg-card p-4 rounded-lg shadow-sm border">
+      <div className="flex justify-between items-center bg-card p-4 rounded-lg shadow-sm border">
         <h1 className="text-2xl font-bold">Productos</h1>
         <Button onClick={() => handleOpenDialog()}>
-           <Plus className="h-4 w-4 mr-2" />
-           Nuevo Producto
+          <Plus className="h-4 w-4 mr-2" />
+          Nuevo Producto
         </Button>
       </div>
 
@@ -164,7 +222,7 @@ export default function ProductsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Producto</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">SKU</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Precio</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Stock</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
@@ -172,48 +230,48 @@ export default function ProductsPage() {
             {data?.products?.edges?.map(({ node }: { node: any }) => (
               <tr key={node.id} className="hover:bg-muted/50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10 bg-secondary/10 rounded-full flex items-center justify-center">
-                            <Package className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="ml-4">
-                            <div className="text-sm font-medium">{node.name}</div>
-                             <div className="text-xs text-muted-foreground">Producto</div>
-                        </div>
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 h-10 w-10 bg-secondary/10 rounded-full flex items-center justify-center overflow-hidden">
+                      {node.images && node.images.length > 0 ? (
+                        <img src={node.images[0].url} alt={node.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Package className="h-5 w-5 text-muted-foreground" />
+                      )}
                     </div>
+                    <div className="ml-4">
+                      <div className="text-sm font-medium">{node.name}</div>
+                      <div className="text-xs text-muted-foreground">{node.category?.name || "Sin categoría"}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{node.sku}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">${(node.salePrice ?? 0).toFixed(2)}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${node.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                    {node.status === "ACTIVE" ? "Activo" : (node.status === "DRAFT" ? "Borrador" : node.status ?? "Sin estado")}
-                   </span>
-                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{node.stock ?? 0}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(node)}>
-                        <Pencil className="h-4 w-4 text-blue-500" />
+                      <Pencil className="h-4 w-4 text-blue-500" />
                     </Button>
                     <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Eliminarás permanentemente el producto "{node.name}".
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDelete(node.id)}>
-                                    Eliminar
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Confirmar eliminación?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Eliminarás permanentemente el producto "{node.name}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => handleDelete(node.id)}>
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
                     </AlertDialog>
                   </div>
                 </td>
@@ -223,80 +281,98 @@ export default function ProductsPage() {
         </table>
       </div>
 
-       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
-            <DialogHeader>
-                <DialogTitle>{editingProduct ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-                <DialogDescription>
-                    Detalles completos del producto.
-                </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSave} className="grid grid-cols-2 gap-4 py-4">
-                 <div className="space-y-2 col-span-2">
-                    <Label htmlFor="name">Nombre del Producto</Label>
-                    <Input 
-                        id="name" 
-                        value={formData.name} 
-                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
-                        required 
-                    />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="sku">SKU</Label>
-                    <Input 
-                        id="sku" 
-                        value={formData.sku} 
-                        onChange={(e) => setFormData({...formData, sku: e.target.value})} 
-                        required 
-                    />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="price">Precio de Venta ($)</Label>
-                    <Input 
-                        id="price" 
-                        type="number"
-                        step="0.01"
-                        value={formData.salePrice} 
-                        onChange={(e) => setFormData({...formData, salePrice: e.target.value})} 
-                        required 
-                    />
-                </div>
-                 <div className="space-y-2 col-span-2">
-                    <Label htmlFor="category">Categoría</Label>
-                     <Select 
-                        value={formData.categoryId} 
-                        onValueChange={(val) => setFormData({...formData, categoryId: val})}
-                        disabled={!!editingProduct} // Disable changing category on edit for simplicity if backend restricts
-                     >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar Categoría" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {categories.map((cat: any) => (
-                                <SelectItem key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2 col-span-2">
-                    <Label htmlFor="desc">Descripción</Label>
-                    <Textarea 
-                        id="desc" 
-                        value={formData.description} 
-                        onChange={(e) => setFormData({...formData, description: e.target.value})} 
-                    />
-                </div>
-                
-                <DialogFooter className="col-span-2 mt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                    <Button type="submit" disabled={creating || updating}>
-                        {(creating || updating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Guardar Producto
-                    </Button>
-                </DialogFooter>
-            </form>
+          <DialogHeader>
+            <DialogTitle>{editingProduct ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
+            <DialogDescription>
+              Detalles completos del producto.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSave} className="grid grid-cols-2 gap-4 py-4">
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="name">Nombre del Producto</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="sku">SKU</Label>
+              <Input
+                id="sku"
+                value={formData.sku}
+                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Precio de Venta ($)</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.salePrice}
+                onChange={(e) => setFormData({ ...formData, salePrice: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="stock">Stock</Label>
+              <Input
+                id="stock"
+                type="number"
+                step="1"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                required
+              />
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="category">Categoría</Label>
+              <Select
+                value={formData.categoryId}
+                onValueChange={(val) => setFormData({ ...formData, categoryId: val })}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Seleccionar Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat: any) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 col-span-2">
+              <Label htmlFor="desc">Descripción</Label>
+              <Textarea
+                id="desc"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+
+            <div className="col-span-2">
+              <ProductImageUpload
+                existingImages={existingImagesList}
+                onImagesChange={setNewImages}
+                onDeleteImage={handleRemoveImage}
+              />
+            </div>
+
+            <DialogFooter className="col-span-2 mt-4">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+              <Button type="submit" disabled={creating || updating}>
+                {(creating || updating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar Producto
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

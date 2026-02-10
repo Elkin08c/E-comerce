@@ -2,15 +2,15 @@
 
 import React from 'react';
 import L from 'leaflet';
-import { 
-  MapContainer, 
-  TileLayer, 
-  Marker, 
-  Polygon, 
-  Polyline, 
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polygon,
+  Polyline,
   Tooltip,
-  useMap, 
-  useMapEvents 
+  useMap,
+  useMapEvents
 } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -56,11 +56,11 @@ interface SimpleZoneMapProps {
 }
 
 // Componente para mostrar el polígono en construcción
-function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isDrawing, isEditing }: { 
+function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isDrawing, isEditing }: {
   coordinates: [number, number][];
   onPointDrag: (index: number, newPosition: [number, number]) => void;
   zoneType?: 'SECURE' | 'RESTRICTED' | 'DANGER';
-  onPointDelete?: (index: number) => void;  
+  onPointDelete?: (index: number) => void;
   isDrawing: boolean; // Para saber si se está dibujando
   isEditing?: boolean; // Para saber si se está editando una zona existente
 }) {
@@ -86,7 +86,7 @@ function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isD
     <>
       {/* Si hay zoneType, mostrar polígono relleno */}
       {zoneType && coordinates.length >= 3 ? (
-        <Polygon 
+        <Polygon
           positions={coordinates}
           pathOptions={{
             color: zoneColor,
@@ -110,7 +110,7 @@ function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isD
               }}
             />
           )}
-          
+
           {/* Línea que cierra el polígono (solo si hay 3 o más puntos) */}
           {coordinates.length >= 3 && (
             <Polyline
@@ -125,11 +125,11 @@ function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isD
           )}
         </>
       )}
-      
+
       {/* Marcadores arrastrables - Mostrar cuando se está dibujando O editando */}
       {(isDrawing || isEditing) && coordinates.map((coord, index) => (
-        <Marker 
-          key={index} 
+        <Marker
+          key={index}
           position={coord}
           draggable={true}
           icon={new L.Icon({
@@ -151,7 +151,7 @@ function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isD
               console.log('✅ Terminando drag del marcador', index);
               const newPosition: [number, number] = [e.target.getLatLng().lat, e.target.getLatLng().lng];
               onPointDrag(index, newPosition);
-              
+
               // Resetear la bandera después de un delay más largo
               setTimeout(() => {
                 isDraggingGlobal = false;
@@ -178,15 +178,15 @@ function DrawingPolygon({ coordinates, onPointDrag, zoneType, onPointDelete, isD
 // Función para calcular el centro de un polígono
 function calculatePolygonCenter(polygon: [number, number][]): [number, number] {
   if (polygon.length === 0) return [0, 0];
-  
+
   let latSum = 0;
   let lngSum = 0;
-  
+
   for (const [lat, lng] of polygon) {
     latSum += lat;
     lngSum += lng;
   }
-  
+
   return [latSum / polygon.length, lngSum / polygon.length];
 }
 
@@ -243,17 +243,17 @@ function CompletedZones({ zones, existingZones, onZoneSelect, isEditing, editing
           }}
         />
       ))}
-      
+
       {/* Zonas existentes del backend con colores según tipo */}
       {existingZones?.map((zone) => {
         // No mostrar la zona que se está editando como zona estática
         if (isEditing && editingZoneId === zone.id) {
           return null;
         }
-        
+
         // Calcular el centro del polígono para mostrar el nombre
         const center = calculatePolygonCenter(zone.polygon);
-        
+
         return (
           <React.Fragment key={`existing-zone-${zone.id}`}>
             <Polygon
@@ -350,15 +350,15 @@ function ZoneNameVisibility({ children }: { children: React.ReactNode }) {
 // Bandera global para prevenir clicks después de drag
 let isDraggingGlobal = false;
 
-  // Componente interno del mapa que se renderiza solo en el cliente
-  function ZoneMapInternal({ onPolygonComplete, onPolygonChange, onPointDrag, onPointDelete, isDrawing, currentPolygon, completedZones = [], existingZones = [], center, zoneType, zoom, bounds, onZoneEdit, onZoneSelect, isEditing, editingZoneId, isActivelyEditing }: SimpleZoneMapProps) {
-    
+// Componente interno del mapa que se renderiza solo en el cliente
+function ZoneMapInternal({ onPolygonComplete, onPolygonChange, onPointDrag, onPointDelete, isDrawing, currentPolygon, completedZones = [], existingZones = [], center, zoneType, zoom, bounds, onZoneEdit, onZoneSelect, isEditing, editingZoneId, isActivelyEditing }: SimpleZoneMapProps) {
+
 
   // Función para manejar el arrastre de puntos
   const handlePointDrag = (index: number, newPosition: [number, number]) => {
     const newCoordinates = [...currentPolygon];
     newCoordinates[index] = newPosition;
-    
+
     // Usar la función específica si está disponible, sino usar la genérica
     if (onPointDrag) {
       onPointDrag(index, newPosition);
@@ -371,7 +371,7 @@ let isDraggingGlobal = false;
   const handlePointDelete = (index: number) => {
     if (currentPolygon.length > 3) {
       const newCoordinates = currentPolygon.filter((_, i) => i !== index);
-      
+
       // Usar la función específica si está disponible, sino usar la genérica
       if (onPointDelete) {
         onPointDelete(index);
@@ -386,22 +386,22 @@ let isDraggingGlobal = false;
     useMapEvents({
       click: (e: any) => {
         console.log('🖱️ Click en el mapa:', { isDrawing, isEditing, currentPolygonLength: currentPolygon.length, isDraggingGlobal });
-        
+
         // No agregar puntos si se está arrastrando
         if (isDraggingGlobal) {
           console.log('❌ Ignorando click después de drag');
           return;
         }
-        
+
         if (isDrawing || isEditing) {
           const newCoord: [number, number] = [e.latlng.lat, e.latlng.lng];
           console.log('📍 Nueva coordenada:', newCoord);
-          
+
           // Si ya hay puntos y el nuevo punto está cerca del primer punto, cerrar el polígono
           if (currentPolygon.length >= 2) {
             const firstPoint = currentPolygon[0];
             const distance = calculateDistance(newCoord, firstPoint);
-            
+
             // Si está a menos de 0.001 grados (aproximadamente 100 metros), cerrar el polígono
             if (distance < 0.001) {
               console.log('🔒 Cerrando polígono automáticamente');
@@ -409,7 +409,7 @@ let isDraggingGlobal = false;
               return;
             }
           }
-          
+
           const newCoords = [...currentPolygon, newCoord];
           console.log('📝 Actualizando polígono:', newCoords);
           onPolygonChange(newCoords);
@@ -437,7 +437,7 @@ let isDraggingGlobal = false;
   // Componente para manejar bounds del mapa
   const MapBounds = () => {
     const map = useMap();
-    
+
     React.useEffect(() => {
       if (bounds && map && !isActivelyEditing) {
         // Solo aplicar bounds si no se está editando activamente para evitar redireccionamiento automático
@@ -448,14 +448,14 @@ let isDraggingGlobal = false;
         });
       }
     }, [bounds, map, isActivelyEditing]);
-    
+
     return null; // No renderiza nada visual, solo maneja bounds
   };
 
   // Función helper para calcular distancia entre dos puntos
   const calculateDistance = (point1: [number, number], point2: [number, number]) => {
     return Math.sqrt(
-      Math.pow(point1[0] - point2[0], 2) + 
+      Math.pow(point1[0] - point2[0], 2) +
       Math.pow(point1[1] - point2[1], 2)
     );
   };
@@ -472,13 +472,12 @@ let isDraggingGlobal = false;
       // Asegurar que no se muestren marcadores por defecto
       markerZoomAnimation={false}
       key={`${center?.[0]}-${center?.[1]}-${zoom}`}
-      whenReady={(event) => {
-        const map = event.target;
-        setTimeout(() => {
-          if (map && map.getContainer()) {
+      ref={(map) => {
+        if (map) {
+          setTimeout(() => {
             map.invalidateSize();
-          }
-        }, 200);
+          }, 200);
+        }
       }}
     >
       <TileLayer
@@ -496,18 +495,18 @@ let isDraggingGlobal = false;
         bounds={undefined}
         className="map-tiles"
       />
-      
+
       {/* Componente para manejar eventos del mapa */}
       <MapEvents />
-      
-      
+
+
       {/* Componente para manejar bounds del mapa */}
       <MapBounds />
 
       {/* Mostrar zonas completadas */}
-      <CompletedZones 
+      <CompletedZones
         zones={completedZones}
-        existingZones={existingZones}  
+        existingZones={existingZones}
         onZoneEdit={onZoneEdit}
         onZoneSelect={onZoneSelect}
         isEditing={isEditing}
@@ -517,8 +516,8 @@ let isDraggingGlobal = false;
 
       {/* Mostrar polígono en construcción o en edición */}
       {(isDrawing || isEditing) && currentPolygon.length > 0 && (
-        <DrawingPolygon 
-          coordinates={currentPolygon} 
+        <DrawingPolygon
+          coordinates={currentPolygon}
           onPointDrag={handlePointDrag}
           zoneType={zoneType}
           onPointDelete={handlePointDelete}

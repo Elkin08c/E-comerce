@@ -47,7 +47,7 @@ function LocationMarker({ onSelect, initialPosition }: { onSelect: (lat: number,
     });
 
     return position === null ? null : (
-        <Marker position={position} icon={L.divIcon({ className: 'bg-transparent', html: '<div style="background-color: #ef4444; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.3);"></div>' })}>
+        <Marker position={position} icon={L.divIcon({ className: 'bg-transparent', html: '<div style="background-color: #ef4444; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>', iconSize: [24, 24], iconAnchor: [12, 12] })}>
         </Marker>
         // Using a simple divIcon to avoid asset issues for now, or we can use the default if assets exist
     );

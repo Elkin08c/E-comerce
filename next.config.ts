@@ -1,6 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "api.axcalle.dev",
+        pathname: "/uploads/**",
+      },
+    ],
+  },
   // Rewrites: en producción (Docker), el navegador envía requests al servidor Next.js
   // y este las reenvía internamente a los servicios backend por la red Docker.
   // En desarrollo local, las URLs absolutas en NEXT_PUBLIC_* se usan directamente.
@@ -23,6 +38,11 @@ const nextConfig: NextConfig = {
       {
         source: "/ai-api/:path*",
         destination: `${aiUrl}/:path*`,
+      },
+      // Proxy uploads para que se sirvan desde el dominio del frontend
+      {
+        source: "/uploads/:path*",
+        destination: `${apiUrl}/uploads/:path*`,
       },
     ];
   },

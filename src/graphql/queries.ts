@@ -10,6 +10,7 @@ export const GET_PRODUCTS = gql`
           name
           slug
           sku
+          description
           salePrice
           costPrice
           status
@@ -17,6 +18,17 @@ export const GET_PRODUCTS = gql`
           isFeatured
           tags
           categoryId
+          stock
+          images {
+            id
+            url
+            isMain
+            sortOrder
+          }
+          category {
+            id
+            name
+          }
         }
       }
     }
@@ -283,6 +295,46 @@ export const GET_CUSTOMER = gql`
       billingCity
       billingState
       isActive
+    }
+  }
+`;
+
+export const GET_CATALOG_PRODUCTS = gql`
+  query GetCatalogProducts(
+    $filters: ProductCatalogFilterInput
+    $sort: ProductSort
+    $page: Int!
+    $limit: Int!
+  ) {
+    catalogProducts(filters: $filters, sort: $sort, page: $page, limit: $limit) {
+      data {
+        id
+        name
+        slug
+        sku
+        salePrice
+        costPrice
+        status
+        hasVariants
+        isFeatured
+        tags
+        categoryId
+        images {
+           url
+           altText
+        }
+        category {
+           id
+           name
+        }
+        stock
+      }
+      meta {
+        total
+        page
+        limit
+        lastPage
+      }
     }
   }
 `;

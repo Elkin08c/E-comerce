@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@apollo/client/react";
-import { GET_PRODUCTS, GET_CATEGORIES } from "@/graphql/queries";
+import { GET_CATALOG_PRODUCTS, GET_CATEGORIES } from "@/graphql/queries";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
@@ -29,70 +29,51 @@ import { Separator } from "@/components/ui/separator";
 
 export default function CatalogPage() {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+  const [queryPriceRange, setQueryPriceRange] = useState<[number, number]>([0, 2000]); // State for API query
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showOnlyInStock, setShowOnlyInStock] = useState(false);
   const [sortBy, setSortBy] = useState<string>("default");
-  
+
   // Fetch Categories
   const { data: catData, loading: catLoading } = useQuery<any>(GET_CATEGORIES);
   const categories = catData?.categories?.edges?.map((e: any) => e.node) || [];
 
-  // Fetch Products (fetching a larger batch for client-side filtering demo)
-  const { data: prodData, loading: prodLoading, error: prodError } = useQuery<any>(GET_PRODUCTS, {
-    variables: { first: 100 }, // Fetch up to 100 items
+  // Parse sortBy to enum value
+  const getSortEnum = (sortValue: string) => {
+    switch (sortValue) {
+      case "price-asc": return "PRICE_ASC";
+      case "price-desc": return "PRICE_DESC";
+      case "name": return "NAME_ASC";
+      default: return undefined;
+    }
+  };
+
+  // Fetch Products with Server-Side Filtering
+  const { data: prodData, loading: prodLoading, error: prodError } = useQuery<any>(GET_CATALOG_PRODUCTS, {
+    variables: {
+      filters: {
+        categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
+        minPrice: queryPriceRange[0] > 0 ? queryPriceRange[0] : undefined,
+        maxPrice: queryPriceRange[1] < 2000 ? queryPriceRange[1] : undefined,
+        inStock: showOnlyInStock ? true : undefined,
+        search: undefined // Helper for search if added later
+      },
+      sort: getSortEnum(sortBy),
+      page: 1,
+      limit: 12
+    },
+    fetchPolicy: "network-only" // Ensure fresh data on filter change
   });
 
   const products = useMemo(() => {
-    return prodData?.products?.edges?.map((e: any) => e.node) || [];
+    return prodData?.catalogProducts?.data || [];
   }, [prodData]);
 
-  // Filtering and Sorting Logic
-  const filteredProducts = useMemo(() => {
-    let filtered = products.filter((product: any) => {
-      // 1. Category Filter
-      if (selectedCategories.length > 0) {
-        if (!product.category || !selectedCategories.includes(product.category)) {
-            return false;
-        }
-      }
-
-      // 2. Price Filter
-      const price = product.salePrice || product.basePrice || 0;
-      if (price < priceRange[0] || price > priceRange[1]) {
-        return false;
-      }
-
-      // 3. Stock Filter
-      if (showOnlyInStock && product.stock === 0) {
-        return false;
-      }
-
-      return true;
-    });
-
-    // Sorting
-    if (sortBy === "price-asc") {
-      filtered = [...filtered].sort((a, b) => {
-        const priceA = a.salePrice || a.basePrice || 0;
-        const priceB = b.salePrice || b.basePrice || 0;
-        return priceA - priceB;
-      });
-    } else if (sortBy === "price-desc") {
-      filtered = [...filtered].sort((a, b) => {
-        const priceA = a.salePrice || a.basePrice || 0;
-        const priceB = b.salePrice || b.basePrice || 0;
-        return priceB - priceA;
-      });
-    } else if (sortBy === "name") {
-      filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    return filtered;
-  }, [products, selectedCategories, priceRange, showOnlyInStock, sortBy]);
+  const totalResults = prodData?.catalogProducts?.meta?.total || 0;
 
   const toggleCategory = (catId: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(catId) 
+    setSelectedCategories(prev =>
+      prev.includes(catId)
         ? prev.filter(c => c !== catId)
         : [...prev, catId]
     );
@@ -104,27 +85,27 @@ export default function CatalogPage() {
       <div className="space-y-4">
         <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Categorías</h3>
         {catLoading ? (
-            <div className="space-y-2">
-                {[1,2,3].map(i => <div key={i} className="h-4 bg-secondary/30 rounded w-2/3 animate-pulse" />)}
-            </div>
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => <div key={i} className="h-4 bg-secondary/30 rounded w-2/3 animate-pulse" />)}
+          </div>
         ) : (
-            <div className="space-y-2">
+          <div className="space-y-2">
             {categories.map((cat: any) => (
-                <div key={cat.id} className="flex items-center space-x-2">
-                <Checkbox 
-                    id={cat.id} 
-                    checked={selectedCategories.includes(cat.id)}
-                    onCheckedChange={() => toggleCategory(cat.id)}
+              <div key={cat.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={cat.id}
+                  checked={selectedCategories.includes(cat.id)}
+                  onCheckedChange={() => toggleCategory(cat.id)}
                 />
-                <Label 
-                    htmlFor={cat.id} 
-                    className="text-sm font-normal cursor-pointer hover:text-primary transition-colors"
+                <Label
+                  htmlFor={cat.id}
+                  className="text-sm font-normal cursor-pointer hover:text-primary transition-colors"
                 >
-                    {cat.name}
+                  {cat.name}
                 </Label>
-                </div>
+              </div>
             ))}
-            </div>
+          </div>
         )}
       </div>
 
@@ -132,55 +113,57 @@ export default function CatalogPage() {
 
       {/* Price Range */}
       <div className="space-y-4">
-         <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Precio</h3>
-            <span className="text-sm text-foreground font-medium">
-                ${priceRange[0]} - ${priceRange[1]}
-            </span>
-         </div>
-         <Slider
-            defaultValue={[0, 2000]}
-            max={5000}
-            step={10}
-            value={priceRange}
-            onValueChange={(val) => setPriceRange([val[0], val[1]])}
-            className="py-4"
-         />
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Precio</h3>
+          <span className="text-sm text-foreground font-medium">
+            ${priceRange[0]} - ${priceRange[1]}
+          </span>
+        </div>
+        <Slider
+          defaultValue={[0, 2000]}
+          max={5000}
+          step={10}
+          value={priceRange}
+          onValueChange={(val) => setPriceRange([val[0], val[1]])}
+          onValueCommit={(val) => setQueryPriceRange([val[0], val[1]])}
+          className="py-4"
+        />
       </div>
-      
+
       <Separator />
 
       {/* Stock Availability */}
       <div className="space-y-4">
         <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Disponibilidad</h3>
         <div className="flex items-center space-x-2">
-          <Checkbox 
-            id="in-stock" 
+          <Checkbox
+            id="in-stock"
             checked={showOnlyInStock}
             onCheckedChange={(checked) => setShowOnlyInStock(checked as boolean)}
           />
-          <Label 
-            htmlFor="in-stock" 
+          <Label
+            htmlFor="in-stock"
             className="text-sm font-normal cursor-pointer hover:text-primary transition-colors"
           >
             Solo productos en stock
           </Label>
         </div>
       </div>
-      
+
       {(selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 2000 || showOnlyInStock) && (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full"
-            onClick={() => {
-                setSelectedCategories([]);
-                setPriceRange([0, 2000]);
-                setShowOnlyInStock(false);
-            }}
-          >
-              Limpiar Filtros
-          </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            setSelectedCategories([]);
+            setPriceRange([0, 2000]);
+            setQueryPriceRange([0, 2000]);
+            setShowOnlyInStock(false);
+          }}
+        >
+          Limpiar Filtros
+        </Button>
       )}
     </div>
   );
@@ -191,84 +174,84 @@ export default function CatalogPage() {
 
       <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
         <div className="flex flex-col md:flex-row gap-8">
-            
-            {/* Desktop Sidebar */}
-            <aside className="hidden md:block w-64 flex-shrink-0 space-y-8 sticky top-24 self-start h-[calc(100vh-8rem)] overflow-y-auto pr-4">
-                <div>
-                   <h2 className="text-2xl font-bold mb-6">Filtros</h2>
-                   <FilterContent />
-                </div>
-            </aside>
 
-            {/* Mobile Filter Trigger */}
-            <div className="md:hidden mb-4">
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" className="w-full flex gap-2">
-                             <Filter className="h-4 w-4" />
-                             Filtrar Productos
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left">
-                        <SheetHeader>
-                            <SheetTitle>Filtros</SheetTitle>
-                            <SheetDescription>Ajusta tu búsqueda</SheetDescription>
-                        </SheetHeader>
-                        <div className="py-6">
-                            <FilterContent />
-                        </div>
-                        <SheetFooter>
-                           
-                        </SheetFooter>
-                    </SheetContent>
-                </Sheet>
+          {/* Desktop Sidebar */}
+          <aside className="hidden md:block w-64 flex-shrink-0 space-y-8 sticky top-24 self-start h-[calc(100vh-8rem)] overflow-y-auto pr-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-6">Filtros</h2>
+              <FilterContent />
+            </div>
+          </aside>
+
+          {/* Mobile Filter Trigger */}
+          <div className="md:hidden mb-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="w-full flex gap-2">
+                  <Filter className="h-4 w-4" />
+                  Filtrar Productos
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                <SheetHeader>
+                  <SheetTitle>Filtros</SheetTitle>
+                  <SheetDescription>Ajusta tu búsqueda</SheetDescription>
+                </SheetHeader>
+                <div className="py-6">
+                  <FilterContent />
+                </div>
+                <SheetFooter>
+
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* Main Grid */}
+          <div className="flex-1">
+            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Catálogo</h1>
+                <span className="text-muted-foreground text-sm mt-1">
+                  {totalResults} {totalResults === 1 ? 'resultado' : 'resultados'}
+                </span>
+              </div>
+
+              {/* Sort Selector */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="default">Ordenar por: Predeterminado</option>
+                <option value="price-asc">Precio: Menor a Mayor</option>
+                <option value="price-desc">Precio: Mayor a Menor</option>
+                <option value="name">Nombre: A-Z</option>
+              </select>
             </div>
 
-            {/* Main Grid */}
-            <div className="flex-1">
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                     <div>
-                       <h1 className="text-3xl font-bold tracking-tight">Catálogo</h1>
-                       <span className="text-muted-foreground text-sm mt-1">
-                          {filteredProducts.length} {filteredProducts.length === 1 ? 'resultado' : 'resultados'}
-                       </span>
-                     </div>
-                     
-                     {/* Sort Selector */}
-                     <select
-                       value={sortBy}
-                       onChange={(e) => setSortBy(e.target.value)}
-                       className="px-4 py-2 border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                     >
-                       <option value="default">Ordenar por: Predeterminado</option>
-                       <option value="price-asc">Precio: Menor a Mayor</option>
-                       <option value="price-desc">Precio: Mayor a Menor</option>
-                       <option value="name">Nombre: A-Z</option>
-                     </select>
-                </div>
-                
-                {prodLoading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                    </div>
-                 ) : prodError ? (
-                    <div className="text-center py-20 text-destructive">
-                        Error al cargar productos: {prodError.message}
-                    </div>
-                 ) : filteredProducts.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center border rounded-xl bg-secondary/5">
-                        <Filter className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                        <h2 className="text-xl font-semibold mb-2">No se encontraron productos</h2>
-                        <p className="text-muted-foreground">Intenta ajustar tus filtros</p>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                        {filteredProducts.map((product: any) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                )}
-            </div>
+            {prodLoading ? (
+              <div className="flex justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              </div>
+            ) : prodError ? (
+              <div className="text-center py-20 text-destructive">
+                Error al cargar productos: {prodError.message}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center border rounded-xl bg-secondary/5">
+                <Filter className="h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                <h2 className="text-xl font-semibold mb-2">No se encontraron productos</h2>
+                <p className="text-muted-foreground">Intenta ajustar tus filtros</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                {products.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 

@@ -1,0 +1,2010 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AttributeGroupOutput {
+  id: String!
+  name: String!
+  isRequired: Boolean!
+  sortOrder: Int!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type ProductsImageOutput {
+  id: String!
+  productId: String
+  variantId: String
+  comboId: String
+  url: String!
+  altText: String
+  sortOrder: Int!
+  isMain: Boolean!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+}
+
+type AttributesOutput {
+  color: String
+  storage: String
+  size: String
+  material: String
+  other: String
+}
+
+type ProductVariantOutput {
+  id: String!
+  productId: String!
+  name: String!
+  sku: String!
+  salePrice: Float
+  costPrice: Float
+  weight: Float
+  dimensions: Dimensions
+  attributes: AttributesOutput
+  isActive: Boolean!
+  images: [ProductsImageOutput!]
+  sortOrder: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+  stock: Int
+  availableStock: Int
+}
+
+type Dimensions {
+  width: Float!
+  height: Float!
+  length: Float!
+  color: String!
+}
+
+type ProductsOutput {
+  id: String!
+  categoryId: String
+  name: String!
+  slug: String!
+  description: String
+  shortDescription: String
+  sku: String!
+  salePrice: Float
+  costPrice: Float
+  shippingCost: Float
+  minimumStock: Float
+  weight: Float
+  dimensions: Dimensions
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]
+  status: String
+  isFeatured: Boolean
+  hasVariants: Boolean
+  trackInventory: Boolean
+  isActive: Boolean
+  deletedAt: DateTime
+  variants: [ProductVariantOutput!]
+  images: [ProductsImageOutput!]
+  stock: Int
+  availableStock: Int
+  category: CategoryOutput
+}
+
+type CategoryOutput {
+  id: String!
+  name: String!
+  slug: String!
+  description: String
+  parentId: String
+  level: Float
+  metaTitle: String
+  metaDescription: String
+  image: String
+  icon: String
+  sortOrder: Float
+  isFeatured: Boolean
+  isActive: Boolean
+  deletedAt: DateTime
+  children: [CategoryOutput!]
+  products: [ProductsOutput!]
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+type CategoryConnection {
+  edges: [CategoryOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CategoryOutputEdge {
+  cursor: String!
+  node: CategoryOutput!
+}
+
+"""Output type for product attributes"""
+type ProductAttributesOutput {
+  """Identificador único del atributo"""
+  id: String!
+
+  """ID del producto al que pertenece el atributo"""
+  productId: String!
+
+  """ID del grupo de atributos (opcional)"""
+  groupId: String
+
+  """Nombre del atributo"""
+  name: String!
+
+  """Valor del atributo"""
+  value: String!
+
+  """Orden de visualización del atributo"""
+  sortOrder: Int!
+
+  """Indica si el atributo está activo"""
+  isActive: Boolean!
+
+  """Fecha de creación del atributo"""
+  createdAt: DateTime!
+
+  """Fecha de última actualización del atributo"""
+  updatedAt: DateTime!
+
+  """Fecha de eliminación suave (soft delete)"""
+  deletedAt: DateTime
+}
+
+type ProductAttributeConnection {
+  edges: [ProductAttributesOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductAttributesOutputEdge {
+  cursor: String!
+  node: ProductAttributesOutput!
+}
+
+"""Output type for product combo items"""
+type ProductComboItemsOutput {
+  """Identificador único del item del combo"""
+  id: String!
+
+  """ID del combo al que pertenece este item"""
+  comboId: String!
+
+  """ID del producto incluido en el combo"""
+  productId: String!
+
+  """Nombre del item en el combo (ej: 'Licuadora')"""
+  name: String!
+
+  """Cantidad de este producto en el combo"""
+  quantity: Int!
+
+  """Orden de visualización del item en el combo"""
+  sortOrder: Int!
+
+  """ID de la variante por defecto (color con mayor stock)"""
+  defaultVariantId: String
+
+  """Precio base del producto en el combo"""
+  itemBasePrice: Float!
+
+  """Descuento aplicado a este item específico"""
+  itemDiscountAmount: Float!
+
+  """Indica si el item está activo en el combo"""
+  isActive: Boolean!
+
+  """Fecha de creación del item del combo"""
+  createdAt: DateTime!
+
+  """Fecha de última actualización del item"""
+  updatedAt: DateTime!
+
+  """Fecha de eliminación suave (soft delete)"""
+  deletedAt: DateTime
+}
+
+type ProductComboItemsConnection {
+  edges: [ProductComboItemsOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductComboItemsOutputEdge {
+  cursor: String!
+  node: ProductComboItemsOutput!
+}
+
+type TaxInfoOutput {
+  taxName: String
+  taxRate: Float
+  taxAmount: Float
+}
+
+type OrdersItemsOutput {
+  id: String
+  orderId: String
+  productId: String
+  variantId: String
+  comboId: String
+  productName: String
+  productSku: String
+  variantName: String
+  unitPrice: Float
+  quantity: Float
+  totalPrice: Float
+  taxInfo: TaxInfoOutput
+  notes: String
+  isActive: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+}
+
+"""Output para dimensiones del combo"""
+type ComboDimensionsOutput {
+  """Largo del combo"""
+  length: Float!
+
+  """Ancho del combo"""
+  width: Float!
+
+  """Alto del combo"""
+  height: Float!
+}
+
+type ProductComboOutput {
+  id: String!
+  companyId: String!
+  categoryId: String
+  name: String!
+  slug: String!
+  description: String
+  shortDescription: String
+  sku: String!
+  finalPrice: Float!
+  originalPrice: Float!
+  discountAmount: Float!
+  discountPercent: Float!
+  totalWeight: Float
+  totalDimensions: ComboDimensionsOutput
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]!
+  status: ProductStatus!
+  isFeatured: Boolean!
+  isActive: Boolean!
+  hasCustomStock: Boolean!
+  customStockLimit: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+  productComboItems: [ProductComboItemsOutput!]
+  ordersItems: [OrdersItemsOutput!]
+}
+
+"""Product availability status"""
+enum ProductStatus {
+  """Product in draft state, not visible to customers"""
+  DRAFT
+
+  """Product is active and available for purchase"""
+  ACTIVE
+
+  """Product is temporarily inactive"""
+  INACTIVE
+
+  """Product is out of stock"""
+  OUT_OF_STOCK
+}
+
+type ProductComboConnection {
+  edges: [ProductComboOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductComboOutputEdge {
+  cursor: String!
+  node: ProductComboOutput!
+}
+
+"""Output type for product reviews"""
+type ProductReviewsOutput {
+  """Identificador único de la reseña"""
+  id: String!
+
+  """ID del producto reseñado"""
+  productId: String!
+
+  """ID del usuario que escribió la reseña"""
+  userId: String!
+
+  """Calificación de la reseña (1-5 estrellas)"""
+  rating: Int!
+
+  """Título de la reseña"""
+  title: String
+
+  """Comentario detallado de la reseña"""
+  comment: String
+
+  """Indica si la reseña ha sido aprobada por moderación"""
+  isApproved: Boolean!
+
+  """Indica si la reseña es visible públicamente"""
+  isVisible: Boolean!
+
+  """Indica si la reseña está activa"""
+  isActive: Boolean!
+
+  """Indica si es una compra verificada"""
+  isVerifiedPurchase: Boolean!
+
+  """Fecha de creación de la reseña"""
+  createdAt: DateTime!
+
+  """Fecha de última actualización de la reseña"""
+  updatedAt: DateTime!
+
+  """Fecha de eliminación suave (soft delete)"""
+  deletedAt: DateTime
+}
+
+type ProductsReviewsConnection {
+  edges: [ProductReviewsOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductReviewsOutputEdge {
+  cursor: String!
+  node: ProductReviewsOutput!
+}
+
+type ProductVariantConnection {
+  edges: [ProductVariantOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductVariantOutputEdge {
+  cursor: String!
+  node: ProductVariantOutput!
+}
+
+type PaginationMeta {
+  total: Int!
+  page: Int!
+  limit: Int!
+  lastPage: Int!
+}
+
+type PaginatedProductsOutput {
+  data: [ProductsOutput!]!
+  meta: PaginationMeta!
+}
+
+type ProductConnection {
+  edges: [ProductsOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductsOutputEdge {
+  cursor: String!
+  node: ProductsOutput!
+}
+
+type ProductImagesConnections {
+  edges: [ProductsImageOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProductsImageOutputEdge {
+  cursor: String!
+  node: ProductsImageOutput!
+}
+
+type WishlistOutput {
+  id: String!
+  userId: String!
+  productId: String!
+  variantId: String!
+  notes: String!
+  priority: Float!
+  notifyOnPriceChange: Boolean!
+  notifyOnStock: Boolean!
+  desiredPrice: Float!
+  priceAtAddition: Float!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime!
+}
+
+type WishListConnection {
+  edges: [WishlistOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type WishlistOutputEdge {
+  cursor: String!
+  node: WishlistOutput!
+}
+
+type CityOutput {
+  id: String
+  provinceId: String
+  name: String
+  isActive: Boolean
+
+  """Soft delete timestamp"""
+  deletedAt: DateTime
+}
+
+type CityConnection {
+  edges: [CityOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CityOutputEdge {
+  cursor: String!
+  node: CityOutput!
+}
+
+"""Province Table"""
+type ProvinceOutput {
+  id: String!
+  name: String!
+  code: String!
+  cities: [CityOutput!]
+}
+
+type ProvinceConnection {
+  edges: [ProvinceOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type ProvinceOutputEdge {
+  cursor: String!
+  node: ProvinceOutput!
+}
+
+type CalculationDetailsOutput {
+  detailType: String
+  description: String
+  amount: Float
+}
+
+type AppliedsDiscountOutput {
+  id: String!
+  orderId: String!
+  discountRuleId: String
+  discountName: String!
+  discountCode: String
+  discountType: DiscountType!
+  discountValue: Float!
+  appliedAmount: Float!
+  trigger: DiscountTrigger!
+  orderSubtotal: Float!
+  calculationDetails: CalculationDetailsOutput
+  customerId: String
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+}
+
+"""Types of discounts in the system"""
+enum DiscountType {
+  """Percentage based discount"""
+  PERCENTAGE
+
+  """Fixed amount discount"""
+  FIXED
+}
+
+"""Triggers for applying discounts"""
+enum DiscountTrigger {
+  """Discount applied via referral link"""
+  REFERRAL
+
+  """Discount applied via specific payment method"""
+  PAYMENT_METHOD
+
+  """Discount applied via specific shipping method"""
+  SHIPPING_METHOD
+
+  """Discount applied via manual coupon"""
+  COUPON
+
+  """Discount applied via promotional campaign"""
+  CAMPAIGN
+
+  """Discount applied based on customer segment (VIP, etc)"""
+  CUSTOMER_SEGMENT
+
+  """Seasonal discounts"""
+  SEASONAL
+
+  """Bulk purchase discounts"""
+  BULK
+}
+
+type AppliedDiscountsConnection {
+  edges: [AppliedsDiscountOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type AppliedsDiscountOutputEdge {
+  cursor: String!
+  node: AppliedsDiscountOutput!
+}
+
+type OrdersOutput {
+  id: String!
+  orderNumber: String!
+  customerId: String!
+  addressId: String!
+  isOnlineOrder: Boolean!
+  salesChannel: String
+  status: OrderStatus!
+  paymentStatus: PaymentStatus!
+  fulfilledByBranchId: String
+  subtotal: Float!
+  taxAmount: Float!
+  shippingAmount: Float!
+  referralDiscount: Float!
+  paymentDiscount: Float!
+  shippingDiscount: Float!
+  couponDiscount: Float!
+  campaignDiscount: Float!
+  otherDiscounts: Float!
+  discountAmount: Float!
+  totalAmount: Float!
+  notes: String
+  internalNotes: String!
+  referralCodeId: String
+  confirmedAt: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+  cancelledAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  IsActive: Boolean!
+  deletedAt: DateTime
+  items: OrdersItemsOutput
+}
+
+"""Order processing status"""
+enum OrderStatus {
+  """Order pending confirmation"""
+  PENDING
+
+  """Order confirmed and being processed"""
+  CONFIRMED
+
+  """Order is being prepared"""
+  PREPARING
+
+  """Order is ready for pickup"""
+  READY_FOR_PICKUP
+
+  """Order has been shipped"""
+  SHIPPED
+
+  """Order has been delivered"""
+  DELIVERED
+
+  """Order completed successfully"""
+  COMPLETED
+
+  """Order was cancelled"""
+  CANCELLED
+
+  """Order was returned"""
+  RETURNED
+
+  """Order was refunded"""
+  REFUNDED
+}
+
+"""Payment processing status"""
+enum PaymentStatus {
+  """Payment is pending"""
+  PENDING
+
+  """Payment is being processed"""
+  PROCESSING
+
+  """Payment completed successfully"""
+  PAID
+
+  """Payment failed"""
+  FAILED
+
+  """Payment was cancelled"""
+  CANCELLED
+
+  """Payment was refunded"""
+  REFUNDED
+
+  """Payment was partially refunded"""
+  PARTIALLY_REFUNDED
+}
+
+type CustomerBasicOutput {
+  id: String!
+  firstName: String
+  lastName: String
+  email: String!
+  phone: String
+}
+
+type AddressBasicOutput {
+  id: String!
+  street: String
+  city: String
+  state: String
+  zipCode: String
+}
+
+type ProductBasicOutput {
+  id: String!
+  name: String!
+  sku: String
+}
+
+type VariantBasicOutput {
+  id: String!
+  name: String!
+  sku: String
+}
+
+type ComboBasicOutput {
+  id: String!
+  name: String!
+}
+
+type StockReservationBasicOutput {
+  id: String!
+  quantity: Float!
+  status: String!
+  expiresAt: DateTime
+}
+
+type OrderShippingDetailOutput {
+  id: String!
+  recipientName: String!
+  recipientPhone: String!
+  shippingAddress: String!
+  trackingNumber: String
+  estimatedDeliveryDate: DateTime
+  actualDeliveryDate: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+}
+
+type PaymentBasicOutput {
+  id: String!
+  amount: Float!
+  status: String!
+  processedAt: DateTime
+  createdAt: DateTime!
+}
+
+type UserBasicOutput {
+  id: String!
+  firstName: String
+  lastName: String
+  email: String!
+}
+
+type AppliedDiscountOutput {
+  id: String!
+  discountId: String!
+  discountAmount: Float!
+  description: String
+}
+
+type OrderStatusHistoryOutput {
+  id: String!
+  status: String!
+  notes: String
+  changedByUser: UserBasicOutput
+  createdAt: DateTime!
+}
+
+type OrderWithDetailsOutput {
+  id: String!
+  orderNumber: String!
+  customerId: String!
+  addressId: String!
+  isOnlineOrder: Boolean!
+  salesChannel: String
+  status: OrderStatus!
+  paymentStatus: PaymentStatus!
+  fulfilledByBranchId: String
+  subtotal: Float!
+  taxAmount: Float!
+  shippingAmount: Float!
+  referralDiscount: Float!
+  paymentDiscount: Float!
+  shippingDiscount: Float!
+  couponDiscount: Float!
+  campaignDiscount: Float!
+  otherDiscounts: Float!
+  discountAmount: Float!
+  totalAmount: Float!
+  notes: String
+  internalNotes: String!
+  referralCodeId: String
+  confirmedAt: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+  cancelledAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  IsActive: Boolean!
+  deletedAt: DateTime
+  items: OrdersItemsOutput
+  customer: CustomerBasicOutput
+  address: AddressBasicOutput
+  shipping: OrderShippingDetailOutput
+  payments: [PaymentBasicOutput!]
+  statusHistory: [OrderStatusHistoryOutput!]
+  appliedDiscounts: [AppliedDiscountOutput!]
+}
+
+type OrdersConnection {
+  edges: [OrdersOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type OrdersOutputEdge {
+  cursor: String!
+  node: OrdersOutput!
+}
+
+type PaymentOutput {
+  id: String!
+  orderId: String!
+  status: String!
+  amount: Float!
+  paymentMode: String
+  deliveryPaymentType: String
+  collectedAt: DateTime
+  processedAt: DateTime
+}
+
+type CheckoutReservationOutput {
+  reservationId: String!
+  productId: String!
+  variantId: String
+  quantity: Float!
+  expiresAt: DateTime!
+}
+
+type CheckoutNextStepsOutput {
+  requiresPaymentVerification: Boolean!
+  requiresBankTransferProof: Boolean!
+  paymentInstructions: String
+  estimatedDeliveryDate: DateTime
+}
+
+type CheckoutResultOutput {
+  success: Boolean!
+  orderId: String!
+  orderNumber: String!
+  paymentId: String!
+  paymentStatus: String!
+  totalAmount: Float!
+  message: String!
+  reservations: [CheckoutReservationOutput!]
+  nextSteps: CheckoutNextStepsOutput
+}
+
+type DiscountBreakdownOutput {
+  referralDiscount: Float!
+  paymentDiscount: Float!
+  shippingDiscount: Float!
+  couponDiscount: Float!
+  campaignDiscount: Float!
+  otherDiscounts: Float!
+}
+
+type CheckoutTotalsOutput {
+  subtotal: Float!
+  shippingCost: Float!
+  discountAmount: Float!
+  taxAmount: Float!
+  totalAmount: Float!
+  breakdown: DiscountBreakdownOutput
+}
+
+type CartValidationOutput {
+  isEmpty: Boolean!
+  hasInvalidItems: Boolean!
+  invalidItems: [String!]
+}
+
+type StockValidationOutput {
+  allAvailable: Boolean!
+  unavailableItems: [String!]
+}
+
+type AddressValidationOutput {
+  isValid: Boolean!
+  message: String
+}
+
+type ShippingValidationOutput {
+  hasTransportCoverage: Boolean!
+  message: String
+}
+
+type ValidationDetailsOutput {
+  cartValidation: CartValidationOutput
+  stockValidation: StockValidationOutput
+  addressValidation: AddressValidationOutput
+  shippingValidation: ShippingValidationOutput
+}
+
+type CheckoutValidationOutput {
+  isValid: Boolean!
+  errors: [String!]!
+  warnings: [String!]!
+  details: ValidationDetailsOutput
+}
+
+type CartSummaryOutput {
+  id: String!
+  itemsCount: Float!
+  items: [CartItemSummaryOutput!]!
+}
+
+type CartItemSummaryOutput {
+  id: String!
+  productId: String!
+  productName: String!
+  quantity: Float!
+  unitPrice: Float!
+  subtotal: Float!
+  variantId: String
+  variantName: String
+}
+
+type CustomerSummaryOutput {
+  id: String
+  userId: String
+  email: String
+  fullName: String
+}
+
+type TransportCompanySummaryOutput {
+  id: String!
+  name: String!
+}
+
+type ShippingSummaryOutput {
+  methodId: String!
+  methodName: String!
+  methodType: ShippingMethodType!
+  address: String!
+  estimatedDeliveryDays: Float
+  cost: Float!
+  transportCompany: TransportCompanySummaryOutput
+}
+
+"""Available shipping methods"""
+enum ShippingMethodType {
+  """Delivery to customer's home address"""
+  HOME_DELIVERY
+
+  """Pickup at designated pickup point"""
+  PICKUP_POINT
+
+  """Pickup at store location"""
+  STORE_PICKUP
+}
+
+type PaymentSummaryOutput {
+  methodType: PaymentMethodType!
+  methodId: String
+  methodName: String
+}
+
+"""Available payment methods"""
+enum PaymentMethodType {
+  """Cash payment"""
+  CASH
+
+  """Bank transfer payment"""
+  BANK_TRANSFER
+
+  """Credit card payment"""
+  CREDIT_CARD
+}
+
+type AppliedDiscountSummaryOutput {
+  id: String!
+  name: String!
+  code: String
+  amount: Float!
+  trigger: String!
+}
+
+type DiscountsSummaryOutput {
+  applied: [AppliedDiscountSummaryOutput!]!
+  totalDiscount: Float!
+  breakdown: DiscountBreakdownOutput
+}
+
+type CheckoutSummaryOutput {
+  cart: CartSummaryOutput!
+  customer: CustomerSummaryOutput
+  shipping: ShippingSummaryOutput!
+  payment: PaymentSummaryOutput!
+  discounts: DiscountsSummaryOutput!
+  totals: CheckoutTotalsOutput!
+  validation: CheckoutValidationOutput!
+}
+
+type ElectronicInvoiceOutput {
+  id: String!
+  orderId: String
+  emissionPointId: String!
+  invoiceType: InvoiceType!
+  sequential: String
+  accessKey: String
+  status: InvoiceStatus
+  issueDate: DateTime!
+  totalAmount: Float!
+  authorizationNumber: String
+  authorizationDate: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""The type of invoice"""
+enum InvoiceType {
+  INVOICE
+
+  """
+  A credit note is issued to correct a previous invoice, often used for returns or refunds.
+  """
+  CREDIT_NOTE
+  DEBIT_NOTE
+  RETENTION
+}
+
+"""The status of the invoice"""
+enum InvoiceStatus {
+  """
+  The invoice is in draft state and has not been finalized or sent to the customer.
+  """
+  DRAFT
+  PENDING
+  SENDING
+  SENT
+  PROCESSING
+  AUTHORIZED
+  REJECTED
+  CANCELLED
+}
+
+type ElectronicInvoiceItemTaxOutput {
+  taxCode: String
+  taxRate: Float
+  taxAmount: Float
+}
+
+type ElectronicInvoiceItemOutput {
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  discount: Float!
+  totalPrice: Float!
+  taxes: [ElectronicInvoiceItemTaxOutput!]
+}
+
+type EmissionPointMiniOutput {
+  establishmentCode: String!
+  emissionPointCode: String!
+  name: String
+}
+
+type CustomerMiniOutput {
+  documentNumber: String
+  socialReason: String
+  firstName: String
+  lastName: String
+  email: String
+}
+
+type CustomersAddressesOutput {
+  id: String!
+  customerId: String!
+  street: String!
+  neighborhood: String
+  reference: String
+  zipCode: String
+  cityId: String!
+  parishId: String
+  sectorId: String
+  zoneId: String
+  latitude: Float
+  longitude: Float
+  label: String
+  isDefault: Boolean!
+  isBillingAddress: Boolean!
+  isShippingAddress: Boolean!
+  isActive: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime
+  deletedAt: DateTime
+}
+
+type PaymentMethodOutput {
+  id: String!
+  type: PaymentMethodType!
+  cardLast4: String
+  cardBrand: String
+  bankName: String
+  isDefault: Boolean!
+  createdAt: DateTime!
+}
+
+type DiscountUsageOutput {
+  id: String!
+  discountRuleId: String!
+  orderId: String
+  usedAt: DateTime!
+}
+
+type OrderReturnOutput {
+  id: String!
+  orderId: String!
+  status: String!
+  reason: String!
+  requestedAt: DateTime!
+  createdAt: DateTime!
+}
+
+type ShoppingCartOutput {
+  id: String!
+  status: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type CustomersOutput {
+  id: String!
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  dateOfBirth: DateTime
+  isVerified: Boolean
+  lastLoginAt: DateTime
+  squareCustomerId: String
+  customerSegment: CustomerSegment
+  billingAddress: String
+  billingCity: String
+  billingState: String
+  billingZipCode: String
+  billingCountry: String
+  shippingAddress: String
+  shippingCity: String
+  shippingState: String
+  shippingZipCode: String
+  shippingCountry: String
+  isActive: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  deletedAt: DateTime
+  orders: [OrdersOutput!]
+  appliedDiscounts: [AppliedDiscountOutput!]
+  payments: [PaymentOutput!]
+  paymentMethods: [PaymentMethodOutput!]
+  discountUsages: [DiscountUsageOutput!]
+  returns: [OrderReturnOutput!]
+  shoppingCarts: [ShoppingCartOutput!]
+  electronicInvoices: [ElectronicInvoiceOutput!]
+  addresses: [CustomersAddressesOutput!]
+}
+
+"""Available customer segments"""
+enum CustomerSegment {
+  """Newly acquired customers"""
+  NEW
+
+  """Customers who have made repeat purchases"""
+  OCCASIONAL
+
+  """Customers who have made regular purchases"""
+  REGULAR
+
+  """Customers who have made loyal purchases"""
+  LOYAL
+
+  """High-value customers"""
+  VIP
+}
+
+type CustomersConnectionOutput {
+  edges: [CustomersOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CustomersOutputEdge {
+  cursor: String!
+  node: CustomersOutput!
+}
+
+type CustomersAddressesConnectionOutput {
+  edges: [CustomersAddressesOutputEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int
+}
+
+type CustomersAddressesOutputEdge {
+  cursor: String!
+  node: CustomersAddressesOutput!
+}
+
+type Query {
+  attributeGroups(first: Int, after: String, last: Int, before: String): [AttributeGroupOutput!]!
+  attributeGroup(id: String!): AttributeGroupOutput!
+  categories(first: Int, after: String, last: Int, before: String): CategoryConnection!
+  categoriesWithProducts(categoryId: String!): [CategoryOutput!]!
+  categoriesBySlug(slug: String!): [CategoryOutput!]!
+  category(id: String!): CategoryOutput!
+  productAttributes(first: Int, after: String, last: Int, before: String): ProductAttributeConnection!
+  productAttribute(id: String!): ProductAttributesOutput!
+  productComboItems(first: Int, after: String, last: Int, before: String): ProductComboItemsConnection!
+  productComboItem(id: String!): ProductComboItemsOutput!
+  productCombos(first: Int, after: String, last: Int, before: String): ProductComboConnection!
+  productComboWithDetails(id: String!): ProductComboOutput!
+  productCombo(id: String!): ProductComboOutput!
+  productReviews(first: Int, after: String, last: Int, before: String): ProductsReviewsConnection!
+  productReview(id: String!): ProductReviewsOutput!
+  productVariants(first: Int, after: String, last: Int, before: String): ProductVariantConnection!
+  productVariant(id: String!): ProductVariantOutput!
+  products(first: Int, after: String, last: Int, before: String): ProductConnection!
+  catalogProducts(filters: ProductCatalogFilterInput, sort: ProductSort, page: Int! = 1, limit: Int! = 12): PaginatedProductsOutput!
+  product(id: String!): ProductsOutput!
+  productWithVariants(id: String!): ProductsOutput!
+  productsImages(first: Int, after: String, last: Int, before: String): ProductImagesConnections!
+  productsImage(id: String!): ProductsImageOutput!
+  wishlists(first: Int, after: String, last: Int, before: String): WishListConnection!
+  wishlist(id: String!): WishlistOutput!
+
+  """Obtiene el resumen completo del checkout antes de confirmarlo"""
+  getCheckoutSummary(input: CheckoutSummaryInput!): CheckoutSummaryOutput!
+
+  """Valida que el checkout puede ser procesado"""
+  validateCheckout(input: ValidateCheckoutInput!): CheckoutValidationOutput!
+  appliedsDiscounts(first: Int, after: String, last: Int, before: String): AppliedDiscountsConnection!
+  appliedsDiscount(id: String!): AppliedsDiscountOutput!
+  orders(first: Int, after: String, last: Int, before: String): OrdersConnection!
+  order(id: String!): OrdersOutput!
+
+  """Obtiene las órdenes de un cliente con filtros opcionales"""
+  ordersByCustomer(input: OrdersByCustomerInput!): [OrdersOutput!]!
+
+  """Obtiene una orden completa con items, shipping, payments e historial"""
+  orderWithDetails(orderId: String!): OrderWithDetailsOutput!
+
+  """Obtiene los siguientes estados válidos para una orden"""
+  orderNextValidStates(orderId: String!): [OrderStatus!]!
+  customers(first: Int, after: String, last: Int, before: String): CustomersConnectionOutput!
+  customer(id: String!): CustomersOutput!
+  customersAddresses(first: Int, after: String, last: Int, before: String): CustomersAddressesConnectionOutput!
+  customersAddress(id: String!): CustomersAddressesOutput!
+  cities(first: Int, after: String, last: Int, before: String): CityConnection!
+  city(id: String!): CityOutput!
+  cityByProvince(provinceId: String!): [CityOutput!]!
+  provinces(first: Int, after: String, last: Int, before: String): ProvinceConnection!
+  allLocalizations: [ProvinceOutput!]!
+  provincesList(id: String!): [ProvinceOutput!]!
+  province(id: String!): ProvinceOutput!
+}
+
+input ProductCatalogFilterInput {
+  categoryIds: [String!]
+  minPrice: Float
+  maxPrice: Float
+  inStock: Boolean
+  search: String
+}
+
+"""Opciones de ordenamiento para el catálogo de productos"""
+enum ProductSort {
+  """Precio: Menor a Mayor"""
+  PRICE_ASC
+
+  """Precio: Mayor a Menor"""
+  PRICE_DESC
+
+  """Nombre: A-Z"""
+  NAME_ASC
+
+  """Nombre: Z-A"""
+  NAME_DESC
+
+  """Más recientes"""
+  NEWEST
+
+  """Destacados"""
+  FEATURED
+}
+
+input CheckoutSummaryInput {
+  cartId: String!
+  addressId: String!
+  zoneId: String!
+  shippingMethodId: String!
+  shippingMethodType: ShippingMethodType!
+  paymentMethodType: PaymentMethodType!
+  paymentMethodId: String
+  couponCodes: [String!]
+  referralCodeId: String
+}
+
+input ValidateCheckoutInput {
+  cartId: String!
+  addressId: String!
+  zoneId: String!
+  couponCodes: [String!]
+}
+
+input OrdersByCustomerInput {
+  customerId: String!
+  status: OrderStatus
+  dateFrom: DateTime
+  dateTo: DateTime
+  limit: Int = 50
+  offset: Int = 0
+}
+
+type Mutation {
+  createAttributeGroup(createAttributeGroupInput: CreateAttributeGroupInput!): AttributeGroupOutput!
+  updateAttributeGroup(id: String!, data: UpdateAttributeGroupInput!): AttributeGroupOutput!
+  removeAttributeGroup(id: String!): AttributeGroupOutput!
+  createCategory(createCategoryInput: CreateCategoryInput!): CategoryOutput!
+  updateCategory(id: String!, data: UpdateCategoryInput!): CategoryOutput!
+  removeCategory(id: String!): CategoryOutput!
+  createProductAttribute(createProductAttributeInput: CreateProductAttributeInput!): ProductAttributesOutput!
+  updateProductAttribute(id: String!, data: UpdateProductAttributeInput!): ProductAttributesOutput!
+  removeProductAttribute(id: String!): ProductAttributesOutput!
+  createProductComboItem(createProductComboItemInput: CreateProductComboItemInput!): ProductComboItemsOutput!
+  updateProductComboItem(id: String!, data: UpdateProductComboItemInput!): ProductComboItemsOutput!
+  removeProductComboItem(id: String!): ProductComboItemsOutput!
+  createProductCombo(createProductComboInput: CreateProductComboInput!): ProductComboOutput!
+  updateProductCombo(updateProductComboInput: UpdateProductComboInput!): ProductComboOutput!
+  removeProductCombo(id: String!): ProductComboOutput!
+  createProductReview(createProductReviewInput: CreateProductReviewInput!): ProductReviewsOutput!
+  updateProductReview(id: String!, data: UpdateProductReviewInput!): ProductReviewsOutput!
+  removeProductReview(id: String!): ProductReviewsOutput!
+  createProductVariant(createProductVariantInput: CreateProductVariantInput!): ProductVariantOutput!
+  updateProductVariant(id: String!, data: UpdateProductVariantInput!): ProductVariantOutput!
+  removeProductVariant(id: String!): ProductVariantOutput!
+  createProduct(createProductInput: CreateProductInput!): ProductsOutput!
+  updateProduct(id: String!, data: UpdateProductInput!): ProductsOutput!
+  removeProduct(id: String!): ProductsOutput!
+  restoreProduct(id: String!): ProductsOutput!
+  createProductsImage(createProductsImageInput: CreateProductsImageInput!): ProductsImageOutput!
+  updateProductsImage(id: String!, data: UpdateProductsImageInput!): ProductsImageOutput!
+  removeProductsImage(id: String!): ProductsImageOutput!
+  createWishlist(createWishlistInput: CreateWishlistInput!): WishlistOutput!
+  updateWishlist(id: String!, data: UpdateWishlistInput!): WishlistOutput!
+  removeWishlist(id: String!): WishlistOutput!
+
+  """Procesa el checkout completo y crea una orden"""
+  checkout(input: CheckoutInput!): CheckoutResultOutput!
+  createAppliedsDiscount(createAppliedsDiscountInput: CreateAppliedsDiscountInput!): AppliedsDiscountOutput!
+  updateAppliedsDiscount(id: String!, data: UpdateAppliedsDiscountInput!): AppliedsDiscountOutput!
+  removeAppliedsDiscount(id: String!): AppliedsDiscountOutput!
+  createOrder(createOrderInput: CreateOrderInput!): OrdersOutput!
+  updateOrder(id: String!, data: UpdateOrderInput!): OrdersOutput!
+  removeOrder(id: String!): OrdersOutput!
+
+  """Actualiza el estado de una orden con validación de transiciones"""
+  updateOrderStatus(input: UpdateOrderStatusInput!): OrdersOutput!
+
+  """Cancela una orden y libera las reservas de stock asociadas"""
+  cancelOrder(input: CancelOrderInput!): OrdersOutput!
+
+  """Confirma el cobro de un pago contraentrega por el repartidor"""
+  confirmDeliveryPayment(input: ConfirmDeliveryPaymentInput!): PaymentOutput!
+  createCustomer(createCustomerInput: CreateCustomerInput!): CustomersOutput!
+  updateCustomer(id: String!, data: UpdateCustomerInput!): CustomersOutput!
+  removeCustomer(id: String!): CustomersOutput!
+  createCustomersAddress(createCustomersAddressInput: CreateCustomersAddressInput!): CustomersAddressesOutput!
+  updateCustomersAddress(id: String!, data: UpdateCustomersAddressInput!): CustomersAddressesOutput!
+  removeCustomersAddress(id: String!): CustomersAddressesOutput!
+  createCity(createCityInput: CreateCityInput!): CityOutput!
+  updateCity(id: String!, data: UpdateCityInput!): CityOutput!
+  removeCity(id: String!): CityOutput!
+  createProvince(createProvinceInput: CreateProvinceInput!): ProvinceOutput!
+  updateProvince(id: String!, data: UpdateProvinceInput!): ProvinceOutput!
+  removeProvince(id: String!): ProvinceOutput!
+}
+
+input CreateAttributeGroupInput {
+  name: String!
+  isRequired: Boolean!
+  sortOrder: Int!
+}
+
+input UpdateAttributeGroupInput {
+  name: String
+  isRequired: Boolean
+  sortOrder: Int
+}
+
+input CreateCategoryInput {
+  name: String!
+  slug: String!
+  description: String!
+  parentId: String!
+  level: Float!
+  metaTitle: String!
+  metaDescription: String!
+  image: String!
+  icon: String!
+  sortOrder: Float!
+  isFeatured: Boolean!
+}
+
+input UpdateCategoryInput {
+  name: String
+  slug: String
+  description: String
+  parentId: String
+  level: Float
+  metaTitle: String
+  metaDescription: String
+  image: String
+  icon: String
+  sortOrder: Float
+  isFeatured: Boolean
+}
+
+input CreateProductAttributeInput {
+  """ID del producto al que pertenece el atributo"""
+  productId: String!
+
+  """ID del grupo de atributos (opcional)"""
+  groupId: String
+
+  """Nombre del atributo"""
+  name: String!
+
+  """Valor del atributo"""
+  value: String!
+
+  """Orden de visualización del atributo"""
+  sortOrder: Int! = 0
+}
+
+input UpdateProductAttributeInput {
+  """ID del producto al que pertenece el atributo"""
+  productId: String
+
+  """ID del grupo de atributos (opcional)"""
+  groupId: String
+
+  """Nombre del atributo"""
+  name: String
+
+  """Valor del atributo"""
+  value: String
+
+  """Orden de visualización del atributo"""
+  sortOrder: Int = 0
+}
+
+"""Input para crear un item de combo de producto"""
+input CreateProductComboItemInput {
+  """ID del combo al que pertenece este item"""
+  comboId: String!
+
+  """ID del producto incluido en el combo"""
+  productId: String!
+
+  """Nombre del item en el combo (ej: 'Licuadora')"""
+  name: String!
+
+  """Cantidad de este producto en el combo"""
+  quantity: Int! = 1
+
+  """Orden de visualización del item en el combo"""
+  sortOrder: Int! = 0
+
+  """ID de la variante por defecto (color con mayor stock)"""
+  defaultVariantId: String
+
+  """Precio base del producto en el combo"""
+  itemBasePrice: Float!
+
+  """Descuento aplicado a este item específico"""
+  itemDiscountAmount: Float! = 0
+}
+
+input UpdateProductComboItemInput {
+  """ID del combo al que pertenece este item"""
+  comboId: String
+
+  """ID del producto incluido en el combo"""
+  productId: String
+
+  """Nombre del item en el combo (ej: 'Licuadora')"""
+  name: String
+
+  """Cantidad de este producto en el combo"""
+  quantity: Int = 1
+
+  """Orden de visualización del item en el combo"""
+  sortOrder: Int = 0
+
+  """ID de la variante por defecto (color con mayor stock)"""
+  defaultVariantId: String
+
+  """Precio base del producto en el combo"""
+  itemBasePrice: Float
+
+  """Descuento aplicado a este item específico"""
+  itemDiscountAmount: Float = 0
+}
+
+input CreateProductComboInput {
+  companyId: String!
+  categoryId: String
+  name: String!
+  slug: String!
+  description: String
+  shortDescription: String
+  sku: String!
+  finalPrice: Float!
+  originalPrice: Float!
+  discountAmount: Float!
+  discountPercent: Float!
+  totalWeight: Float
+  totalDimensions: ComboDimensionsInput
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]
+  status: ProductStatus
+  isFeatured: Boolean
+}
+
+"""Input para dimensiones del combo"""
+input ComboDimensionsInput {
+  """Largo del combo"""
+  length: Float!
+
+  """Ancho del combo"""
+  width: Float!
+
+  """Alto del combo"""
+  height: Float!
+}
+
+input UpdateProductComboInput {
+  companyId: String
+  categoryId: String
+  name: String
+  slug: String
+  description: String
+  shortDescription: String
+  sku: String
+  finalPrice: Float
+  originalPrice: Float
+  discountAmount: Float
+  discountPercent: Float
+  totalWeight: Float
+  totalDimensions: ComboDimensionsInput
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]
+  status: ProductStatus
+  isFeatured: Boolean
+  id: String!
+}
+
+"""Input para crear una nueva reseña de producto"""
+input CreateProductReviewInput {
+  """Identificador único de la reseña"""
+  id: String!
+
+  """ID del producto reseñado"""
+  productId: String!
+
+  """ID del usuario que escribió la reseña"""
+  userId: String!
+
+  """Calificación de la reseña (1-5 estrellas)"""
+  rating: Int!
+
+  """Título de la reseña"""
+  title: String
+
+  """Comentario detallado de la reseña"""
+  comment: String
+
+  """Indica si la reseña ha sido aprobada por moderación"""
+  isApproved: Boolean! = false
+
+  """Indica si la reseña es visible públicamente"""
+  isVisible: Boolean! = true
+
+  """Indica si es una compra verificada"""
+  isVerifiedPurchase: Boolean! = false
+}
+
+input UpdateProductReviewInput {
+  """Identificador único de la reseña"""
+  id: String
+
+  """ID del producto reseñado"""
+  productId: String
+
+  """ID del usuario que escribió la reseña"""
+  userId: String
+
+  """Calificación de la reseña (1-5 estrellas)"""
+  rating: Int
+
+  """Título de la reseña"""
+  title: String
+
+  """Comentario detallado de la reseña"""
+  comment: String
+
+  """Indica si la reseña ha sido aprobada por moderación"""
+  isApproved: Boolean = false
+
+  """Indica si la reseña es visible públicamente"""
+  isVisible: Boolean = true
+
+  """Indica si es una compra verificada"""
+  isVerifiedPurchase: Boolean = false
+}
+
+input CreateProductVariantInput {
+  productId: String!
+  name: String!
+  sku: String!
+  salePrice: Float
+  costPrice: Float
+  weight: Float
+  dimensions: String
+  attributes: ProductVariantAttributesInput
+  sortOrder: Int!
+}
+
+input ProductVariantAttributesInput {
+  color: String
+  storage: String
+  size: String
+  material: String
+  other: String
+}
+
+input UpdateProductVariantInput {
+  productId: String
+  name: String
+  sku: String
+  salePrice: Float
+  costPrice: Float
+  weight: Float
+  dimensions: String
+  attributes: ProductVariantAttributesInput
+  sortOrder: Int
+}
+
+input CreateProductInput {
+  categoryId: String!
+  name: String!
+  slug: String!
+  description: String
+  shortDescription: String
+  sku: String!
+  salePrice: Float
+  costPrice: Float
+  shippingCost: Float
+  minimumStock: Float
+  weight: Float
+  dimensions: DimensionsInput
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]!
+  status: ProductStatus
+  isFeatured: Boolean
+  hasVariants: Boolean
+  trackInventory: Boolean
+}
+
+input DimensionsInput {
+  width: Float!
+  height: Float!
+  length: Float!
+  color: String!
+}
+
+input UpdateProductInput {
+  categoryId: String
+  name: String
+  slug: String
+  description: String
+  shortDescription: String
+  sku: String
+  salePrice: Float
+  costPrice: Float
+  shippingCost: Float
+  minimumStock: Float
+  weight: Float
+  dimensions: DimensionsInput
+  metaTitle: String
+  metaDescription: String
+  tags: [String!]
+  status: ProductStatus
+  isFeatured: Boolean
+  hasVariants: Boolean
+  trackInventory: Boolean
+}
+
+"""Input para crear una nueva imagen de producto"""
+input CreateProductsImageInput {
+  """ID del producto al que pertenece la imagen"""
+  productId: String
+
+  """ID de la variante del producto a la que pertenece la imagen"""
+  variantId: String
+
+  """ID del combo de producto al que pertenece la imagen"""
+  comboId: String
+
+  """Archivo de imagen a subir"""
+  file: Upload!
+
+  """Texto alternativo para la imagen (accesibilidad)"""
+  altText: String
+
+  """Orden de visualización de la imagen (número positivo)"""
+  sortOrder: Int!
+
+  """Indica si esta es la imagen principal del producto"""
+  isMain: Boolean!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UpdateProductsImageInput {
+  """ID del producto al que pertenece la imagen"""
+  productId: String
+
+  """ID de la variante del producto a la que pertenece la imagen"""
+  variantId: String
+
+  """ID del combo de producto al que pertenece la imagen"""
+  comboId: String
+
+  """Archivo de imagen a subir"""
+  file: Upload
+
+  """Texto alternativo para la imagen (accesibilidad)"""
+  altText: String
+
+  """Orden de visualización de la imagen (número positivo)"""
+  sortOrder: Int
+
+  """Indica si esta es la imagen principal del producto"""
+  isMain: Boolean
+}
+
+input CreateWishlistInput {
+  userId: String!
+  productId: String!
+  variantId: String!
+  notes: String!
+  priority: Float!
+  notifyOnPriceChange: Boolean!
+  notifyOnStock: Boolean!
+  desiredPrice: Float!
+  priceAtAddition: Float!
+  isActive: Boolean!
+  deletedAt: DateTime!
+}
+
+input UpdateWishlistInput {
+  userId: String
+  productId: String
+  variantId: String
+  notes: String
+  priority: Float
+  notifyOnPriceChange: Boolean
+  notifyOnStock: Boolean
+  desiredPrice: Float
+  priceAtAddition: Float
+  isActive: Boolean
+  deletedAt: DateTime
+}
+
+input CheckoutInput {
+  cartId: String!
+  addressId: String!
+  paymentMethodType: PaymentMethodType!
+  paymentMethodId: String
+  shippingMethodId: String!
+  shippingMethodType: ShippingMethodType!
+  zoneId: String!
+  couponCodes: [String!]
+  referralCodeId: String
+  notes: String
+  sessionId: String
+}
+
+input CreateAppliedsDiscountInput {
+  orderId: String!
+  discountRuleId: String!
+  discountName: String!
+  discountCode: String!
+  discountType: DiscountType!
+  discountValue: Float!
+  appliedAmount: Float!
+  trigger: DiscountTrigger!
+  orderSubtotal: Float!
+  calculationDetails: CalculationDetailsInput!
+  customerId: String!
+}
+
+input CalculationDetailsInput {
+  detailType: String
+  description: String
+  amount: Float
+}
+
+input UpdateAppliedsDiscountInput {
+  orderId: String
+  discountRuleId: String
+  discountName: String
+  discountCode: String
+  discountType: DiscountType
+  discountValue: Float
+  appliedAmount: Float
+  trigger: DiscountTrigger
+  orderSubtotal: Float
+  calculationDetails: CalculationDetailsInput
+  customerId: String
+}
+
+input CreateOrderInput {
+  orderNumber: String!
+  customerId: String!
+  addressId: String!
+  isOnlineOrder: Boolean!
+  salesChannel: String
+  status: OrderStatus!
+  paymentStatus: PaymentStatus!
+  fulfilledByBranchId: String
+  subtotal: Float!
+  taxAmount: Float!
+  shippingAmount: Float!
+  referralDiscount: Float!
+  paymentDiscount: Float!
+  shippingDiscount: Float!
+  couponDiscount: Float!
+  campaignDiscount: Float!
+  otherDiscounts: Float!
+  discountAmount: Float!
+  totalAmount: Float!
+  notes: String
+  internalNotes: String!
+  referralCodeId: String
+  confirmedAt: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+  cancelledAt: DateTime
+}
+
+input UpdateOrderInput {
+  orderNumber: String
+  customerId: String
+  addressId: String
+  isOnlineOrder: Boolean
+  salesChannel: String
+  status: OrderStatus
+  paymentStatus: PaymentStatus
+  fulfilledByBranchId: String
+  subtotal: Float
+  taxAmount: Float
+  shippingAmount: Float
+  referralDiscount: Float
+  paymentDiscount: Float
+  shippingDiscount: Float
+  couponDiscount: Float
+  campaignDiscount: Float
+  otherDiscounts: Float
+  discountAmount: Float
+  totalAmount: Float
+  notes: String
+  internalNotes: String
+  referralCodeId: String
+  confirmedAt: DateTime
+  shippedAt: DateTime
+  deliveredAt: DateTime
+  cancelledAt: DateTime
+}
+
+input UpdateOrderStatusInput {
+  orderId: String!
+  status: OrderStatus!
+  notes: String
+}
+
+input CancelOrderInput {
+  orderId: String!
+  reason: String
+}
+
+input ConfirmDeliveryPaymentInput {
+  """ID del pago a confirmar"""
+  paymentId: String!
+
+  """
+  Metodo de pago usado en la entrega: CASH, BANK_TRANSFER, o CREDIT_CARD (POS)
+  """
+  paymentMethodType: PaymentMethodType!
+
+  """Notas adicionales sobre el cobro"""
+  notes: String
+}
+
+input CreateCustomerInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  phone: String!
+  dateOfBirth: DateTime!
+  isVerified: Boolean!
+  lastLoginAt: DateTime!
+  squareCustomerId: String!
+  customerSegment: CustomerSegment!
+  billingAddress: String
+  billingCity: String
+  billingState: String
+  billingZipCode: String
+  billingCountry: String
+  shippingAddress: String
+  shippingCity: String
+  shippingState: String
+  shippingZipCode: String
+  shippingCountry: String
+}
+
+input UpdateCustomerInput {
+  email: String
+  password: String
+  firstName: String
+  lastName: String
+  phone: String
+  dateOfBirth: DateTime
+  isVerified: Boolean
+  lastLoginAt: DateTime
+  squareCustomerId: String
+  customerSegment: CustomerSegment
+  billingAddress: String
+  billingCity: String
+  billingState: String
+  billingZipCode: String
+  billingCountry: String
+  shippingAddress: String
+  shippingCity: String
+  shippingState: String
+  shippingZipCode: String
+  shippingCountry: String
+}
+
+input CreateCustomersAddressInput {
+  customerId: String!
+  street: String!
+  neighborhood: String
+  reference: String
+  zipCode: String
+  cityId: String!
+  parishId: String
+  sectorId: String
+  zoneId: String
+  latitude: Float
+  longitude: Float
+  label: String
+  isDefault: Boolean!
+  isBillingAddress: Boolean!
+  isShippingAddress: Boolean!
+}
+
+input UpdateCustomersAddressInput {
+  customerId: String
+  street: String
+  neighborhood: String
+  reference: String
+  zipCode: String
+  cityId: String
+  parishId: String
+  sectorId: String
+  zoneId: String
+  latitude: Float
+  longitude: Float
+  label: String
+  isDefault: Boolean
+  isBillingAddress: Boolean
+  isShippingAddress: Boolean
+}
+
+input CreateCityInput {
+  provinceId: String!
+  name: String!
+  isActive: Boolean
+
+  """Soft delete timestamp"""
+  deletedAt: DateTime
+}
+
+input UpdateCityInput {
+  provinceId: String
+  name: String
+  isActive: Boolean
+
+  """Soft delete timestamp"""
+  deletedAt: DateTime
+}
+
+"""Province Table"""
+input CreateProvinceInput {
+  name: String!
+  code: String!
+
+  """Is the province active?"""
+  isActive: Boolean
+  deletedAt: DateTime
+}
+
+input UpdateProvinceInput {
+  name: String
+  code: String
+
+  """Is the province active?"""
+  isActive: Boolean
+  deletedAt: DateTime
+}
