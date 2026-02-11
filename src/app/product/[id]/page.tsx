@@ -90,7 +90,7 @@ export default function ProductDetailPage() {
           <h2 className="text-2xl font-bold text-destructive">Error al cargar producto</h2>
           <p className="text-muted-foreground">{error.message}</p>
           <Button asChild variant="outline">
-            <Link href="/">Volver al Inicio</Link>
+            <Link href="/catalog">Volver al Catálogo</Link>
           </Button>
         </div>
       </div>
@@ -126,8 +126,8 @@ export default function ProductDetailPage() {
       await addItem({
         id: product.id,
         name: product.name,
-        price: product.basePrice || 0,
-        salePrice: product.salePrice || 0,
+        price: product.salePrice || 0,
+        salePrice: product.costPrice && product.costPrice < product.salePrice ? product.costPrice : undefined,
         quantity: quantity,
         image: product.images?.[0]?.url,
       });
@@ -149,7 +149,7 @@ export default function ProductDetailPage() {
         <div className="flex-1 flex flex-col justify-center items-center gap-4 text-center p-4">
           <h2 className="text-2xl font-bold">Producto no encontrado</h2>
           <Button asChild variant="outline">
-            <Link href="/">Regresar al Catálogo</Link>
+            <Link href="/catalog">Regresar al Catálogo</Link>
           </Button>
         </div>
       </div>
@@ -162,7 +162,7 @@ export default function ProductDetailPage() {
 
       <main className="flex-1 py-12 px-4 md:px-8 max-w-7xl mx-auto w-full">
         <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/catalog" className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver al Catálogo
           </Link>
