@@ -30,7 +30,7 @@ import { useCartStore } from "@/store/cart";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCartStore();
+  const { addItem, openCart } = useCartStore();
 
   // Handle optional stock field - default to available if not provided
   const stock = product.stock ?? 100; // Default to 100 if backend doesn't provide stock
@@ -59,6 +59,9 @@ export function ProductCard({ product }: ProductCardProps) {
     toast.success("Agregado al carrito", {
       description: `${product.name} se ha agregado a tu carrito.`
     });
+    
+    // Auto-open cart after adding item
+    openCart();
   };
 
   const hasDiscount = product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice;
@@ -67,7 +70,8 @@ export function ProductCard({ product }: ProductCardProps) {
     : 0;
 
   return (
-    <Card className="group relative border-none shadow-none hover:shadow-xl transition-all duration-300 overflow-hidden bg-card/50 backdrop-blur-sm">
+    <Link href={`/product/${product.id}`} className="block">
+      <Card className="group relative border-none shadow-none hover:shadow-xl transition-all duration-300 overflow-hidden bg-card/50 backdrop-blur-sm">
       <CardHeader className="p-0">
         <div className="aspect-4/5 relative bg-secondary/20 overflow-hidden flex items-center justify-center">
           <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
@@ -112,10 +116,16 @@ export function ProductCard({ product }: ProductCardProps) {
             >
               <ShoppingBag className="h-4 w-4" />
             </Button>
-            <Button variant="secondary" size="icon" className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100">
-              <Link href={`/product/${product.id}`} className="flex items-center justify-center w-full h-full">
-                <Search className="h-4 w-4" />
-              </Link>
+            <Button 
+              variant="secondary" 
+              size="icon" 
+              className="rounded-full translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <Search className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -157,5 +167,6 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
     </Card>
+    </Link>
   );
 }

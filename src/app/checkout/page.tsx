@@ -18,20 +18,19 @@ import { logisticsService } from "@/lib/services/logistics.service";
 import { paymentProvidersService } from "@/lib/services/payment-providers.service";
 import { cartService } from "@/lib/services/cart.service";
 import { useLocationStore } from "@/store/location";
+import { LoginModal } from "@/components/auth/LoginModal";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart, cartId, fetchCart } = useCartStore();
   const { isAuthenticated, user } = useAuthStore();
   const { primaryZone: detectedZone, status: locationStatus, detectLocation } = useLocationStore();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Verificar autenticación al cargar la página
   useEffect(() => {
     if (!isAuthenticated) {
-      toast.error("Debes iniciar sesión para continuar con la compra");
-      // Guardar la ruta actual para redirigir después del login
-      sessionStorage.setItem("redirectAfterLogin", "/checkout");
-      router.push("/login");
+      setShowLoginModal(true);
       return;
     }
 
@@ -262,8 +261,15 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
+    <>
+      <LoginModal 
+        open={showLoginModal} 
+        onOpenChange={setShowLoginModal}
+        redirectPath="/checkout"
+      />
+      
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
@@ -425,6 +431,7 @@ export default function CheckoutPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

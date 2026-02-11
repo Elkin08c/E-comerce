@@ -1,6 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/cart";
+import { useAuthStore } from "@/store/auth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,9 +9,13 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { useState } from "react";
 
 export function CartSheet() {
   const { items, removeItem, updateQuantity, subtotal, isOpen, closeCart } = useCartStore();
+  const { isAuthenticated } = useAuthStore();
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const total = subtotal();
 
   return (
@@ -121,10 +126,6 @@ export function CartSheet() {
                         <span className="text-muted-foreground">Subtotal</span>
                         <span className="font-semibold">${Number(total).toFixed(2)}</span>
                     </div>
-                     <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Envío</span>
-                        <span className="text-muted-foreground">Calculado al pagar</span>
-                    </div>
                      <Separator className="my-2" />
                      <div className="flex justify-between text-base font-semibold">
                         <span>Total</span>
@@ -132,10 +133,25 @@ export function CartSheet() {
                     </div>
                 </div>
                 <div className="grid gap-2">
-                    <Button asChild className="w-full text-lg h-12" size="lg" onClick={closeCart}>
+                    <Button 
+                      className="w-full text-lg h-12" 
+                      size="lg" 
+                      onClick={() => {
+                        if (!isAuthenticated) {
+                          setShowLoginModal(true);
+                        } else {
+                          closeCart();
+                        }
+                      }}
+                      asChild={isAuthenticated}
+                    >
+                      {isAuthenticated ? (
                         <Link href="/checkout">
-                            Proceder al Pago
+                          Proceder al Pago
                         </Link>
+                      ) : (
+                        <span>Proceder al Pago</span>
+                      )}
                     </Button>
                     <Button variant="outline" className="w-full" onClick={closeCart}>
                         Seguir Comprando
@@ -145,6 +161,12 @@ export function CartSheet() {
           </>
         )}
       </SheetContent>
+      
+      <LoginModal 
+        open={showLoginModal} 
+        onOpenChange={setShowLoginModal}
+        redirectPath="/checkout"
+      />
     </Sheet>
   );
 }
