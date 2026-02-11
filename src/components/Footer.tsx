@@ -48,7 +48,7 @@ export default function Footer() {
           </div>
 
           {/* Support Column */}
-          <div>
+          {/* <div>
             <h4 className="font-semibold text-lg mb-6">Soporte</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li><Link href="/contact" className="hover:text-primary transition-colors">Contáctanos</Link></li>
@@ -57,7 +57,7 @@ export default function Footer() {
               <li><Link href="/terms" className="hover:text-primary transition-colors">Términos de Servicio</Link></li>
               <li><Link href="/privacy" className="hover:text-primary transition-colors">Política de Privacidad</Link></li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Newsletter Column */}
           <div>
@@ -80,14 +80,14 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+        {/* <div className="pt-8 border-t border-border/40 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
             <p>&copy; {currentYear} COAVPRO. Todos los derechos reservados.</p>
             <div className="flex gap-6">
                 <Link href="#" className="hover:text-foreground transition-colors">Privacidad</Link>
                 <Link href="#" className="hover:text-foreground transition-colors">Términos</Link>
                 <Link href="#" className="hover:text-foreground transition-colors">Mapa del sitio</Link>
             </div>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

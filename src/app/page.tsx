@@ -68,23 +68,19 @@ export default function StorefrontHome() {
                          </div>
                     </div>
                     
-                    {/* Secondary Blocks */}
+                    {/* Secondary Block - Industrial Tools */}
                     <div className="col-span-4 space-y-4 pt-12">
-                         <div className="aspect-square rounded-3xl bg-primary text-primary-foreground shadow-xl flex flex-col items-center justify-center p-4 text-center transform hover:-translate-y-2 transition-transform duration-300">
-                            <span className="text-5xl font-black">50%</span>
-                            <span className="text-sm font-bold uppercase mt-1">Descuento</span>
-                         </div>
                          <div className="aspect-[3/4] rounded-3xl bg-muted shadow-xl overflow-hidden relative group">
                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-500 z-10"></div>
                              <Image
-                               src="/industrial-tech.png"
-                               alt="Tecnología Industrial"
+                               src="/industrial-tools.png"
+                               alt="Herramientas Industriales"
                                fill
                                className="object-cover"
                                sizes="(max-width: 768px) 100vw, 25vw"
                              />
                              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-20">
-                               <span className="text-lg font-bold text-white">Tecnología</span>
+                               <span className="text-lg font-bold text-white">Herramientas</span>
                              </div>
                          </div>
                     </div>
