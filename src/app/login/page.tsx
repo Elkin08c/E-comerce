@@ -34,7 +34,7 @@ export default function CustomerLoginPage() {
     setError("");
 
     try {
-       const data = await customerAuthService.login({ email, password });
+      const data = await customerAuthService.login({ email, password });
 
       // Primero actualizar el estado de autenticación
       if (data.customer && data.accessToken) {
@@ -59,14 +59,10 @@ export default function CustomerLoginPage() {
         sessionStorage.removeItem("redirectAfterLogin");
         router.push(redirectTo);
       } else {
-        router.push("/"); 
+        router.push("/");
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Ocurrió un error desconocido");
-      }
+      setError("Correo o contraseña inválida");
     } finally {
       setLoading(false);
     }
@@ -77,7 +73,7 @@ export default function CustomerLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-             <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <ShoppingBag className="h-10 w-10 text-primary" />
             </Link>
           </div>
@@ -135,7 +131,7 @@ export default function CustomerLoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
-           <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             ¿No tienes cuenta?{" "}
             <Link href="/register" className="text-primary hover:underline">
               Regístrate

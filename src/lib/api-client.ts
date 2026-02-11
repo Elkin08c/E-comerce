@@ -27,7 +27,7 @@ export const apiClient = async <T>(
   }
 
   const defaultHeaders: HeadersInit = {
-    "Content-Type": "application/json",
+    ...(!(options.body instanceof FormData) && { "Content-Type": "application/json" }),
     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
   };
 
@@ -44,14 +44,11 @@ export const apiClient = async <T>(
   try {
     const response = await fetch(url.toString(), config);
 
-    // En caso de 401, limpiar el estado de auth y dejar que el layout guard maneje la redirección
-    if (response.status === 401 && typeof window !== "undefined") {
-      const currentPath = window.location.pathname;
-      const isLoginPage = currentPath.includes("/auth/login") || currentPath === "/login";
-
-      if (!isLoginPage) {
-        useAuthStore.getState().logout();
-      }
+    // Log 401 pero NO hacer logout automáticamente
+    // El logout agresivo causaba que al recargar la página, cualquier petición
+    // fallida destruyera la sesión del usuario
+    if (response.status === 401) {
+      console.warn(`[apiClient] 401 en ${endpoint} — token podría estar expirado`);
     }
 
     let data: any = null;

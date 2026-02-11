@@ -62,8 +62,8 @@ export default function Navbar() {
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-          ? "bg-background/80 backdrop-blur-md border-b shadow-sm"
-          : "bg-transparent border-b border-transparent"
+        ? "bg-background/80 backdrop-blur-md border-b shadow-sm"
+        : "bg-transparent border-b border-transparent"
         }`}
     >
       <div className="container mx-auto flex h-20 items-center px-4 gap-4">
@@ -215,6 +215,7 @@ export default function Navbar() {
                 <DropdownMenuItem onClick={async () => {
                   await customerAuthService.logout();
                   logoutStore();
+                  useCartStore.getState().clearCart();
                   window.location.reload();
                 }}>
                   Cerrar Sesión

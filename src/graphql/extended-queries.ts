@@ -224,7 +224,8 @@ export const CREATE_CUSTOMER_ADDRESS = gql`
     createCustomersAddress(createCustomersAddressInput: $createCustomersAddressInput) {
       id
       street
-      cityId
+      city
+      state
       zipCode
       isDefault
     }
@@ -236,7 +237,8 @@ export const UPDATE_CUSTOMER_ADDRESS = gql`
     updateCustomersAddress(id: $id, data: $data) {
       id
       street
-      cityId
+      city
+      state
       zipCode
       isDefault
     }

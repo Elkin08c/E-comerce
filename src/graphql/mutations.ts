@@ -76,6 +76,11 @@ export const CHECKOUT = gql`
       paymentStatus
       totalAmount
       message
+      nextSteps {
+        requiresPaymentVerification
+        requiresBankTransferProof
+        paymentInstructions
+      }
     }
   }
 `;

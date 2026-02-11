@@ -2,9 +2,7 @@ import { apiClient } from "../api-client";
 
 export interface PayphoneInitData {
   orderId: string;
-  amount: number;
-  tax: number;
-  service?: number;
+  amount?: number;
 }
 
 export interface PayphoneInitResponse {
@@ -63,10 +61,6 @@ export const paymentProvidersService = {
     return apiClient(`/payments/${paymentId}/upload-proof`, {
       method: "POST",
       body: formData,
-      headers: {
-        // apiClient will handle content-type if we don't set it for FormData
-        "Content-Type": "multipart/form-data",
-      },
     });
   },
 };

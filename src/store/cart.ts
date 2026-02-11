@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { cartService } from '@/lib/services/cart.service';
+import { useAuthStore } from '@/store/auth';
 
 export interface CartItem {
   id: string; // This will be the product ID or variant ID locally, but we need to map to server item IDs
-  serverItemId?: string; 
+  serverItemId?: string;
   name: string;
   price: number;
   salePrice?: number;
@@ -35,32 +36,38 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
       cartId: null,
-      
+
       fetchCart: async () => {
-        const state = get();
-        // Solo sincronizar con el servidor si hay un cartId guardado
-        // (lo que significa que el usuario ya hizo login previamente)
-        if (state.cartId) {
-          try {
-            const cart = await cartService.getOrCreateCart();
-            const mappedItems = cart.items.map((item: any) => ({
-              id: item.productId,
-              serverItemId: item.id,
-              name: item.productName,
-              price: item.unitPrice,
-              quantity: item.quantity,
-            }));
-            set({ items: mappedItems, cartId: cart.id });
-          } catch (error) {
-            console.log('Using local cart (server sync failed)');
+        const { isAuthenticated } = useAuthStore.getState();
+        if (!isAuthenticated) return;
+
+        try {
+          const cart = await cartService.getOrCreateCart();
+          const state = get();
+
+          // Si hay items locales que no estaban en el servidor, sincronizarlos
+          if (state.items.length > 0 && (!cart.items || cart.items.length === 0)) {
+            set({ cartId: cart.id });
+            await get().syncLocalCartToServer();
+            return;
           }
+
+          const mappedItems = cart.items.map((item: any) => ({
+            id: item.productId,
+            serverItemId: item.id,
+            name: item.productName,
+            price: item.unitPrice,
+            quantity: item.quantity,
+          }));
+          set({ items: mappedItems, cartId: cart.id });
+        } catch (error) {
+          console.log('Using local cart (server sync failed)');
         }
-        // Si no hay cartId, usar carrito local (ya está en el estado de Zustand)
       },
 
       syncLocalCartToServer: async () => {
         const state = get();
-        
+
         // Si no hay items locales, no hay nada que sincronizar
         if (state.items.length === 0) {
           return;
@@ -85,7 +92,7 @@ export const useCartStore = create<CartStore>()(
 
           // Recargar el carrito desde el servidor para obtener los IDs correctos
           await get().fetchCart();
-          
+
           console.log('Local cart synced to server successfully');
         } catch (error) {
           console.error('Failed to sync local cart to server:', error);
@@ -128,7 +135,7 @@ export const useCartStore = create<CartStore>()(
       removeItem: async (id) => {
         const state = get();
         const item = state.items.find((item) => item.id === id);
-        
+
         // Remover localmente
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
@@ -171,7 +178,7 @@ export const useCartStore = create<CartStore>()(
 
       clearCart: async () => {
         const state = get();
-        
+
         // Limpiar localmente
         set({ items: [], cartId: null });
 

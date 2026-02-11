@@ -231,17 +231,12 @@ export const GET_CUSTOMER_ADDRESSES = gql`
         node {
           id
           street
-          neighborhood
-          reference
+          city
+          state
           zipCode
-          cityId
-          parishId
-          sectorId
-          zoneId
-          label
+          reference
+          recipientName
           isDefault
-          isBillingAddress
-          isShippingAddress
           isActive
         }
       }

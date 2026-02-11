@@ -1,6 +1,9 @@
 import { Zone, logisticsService } from '@/lib/services/logistics.service';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { client } from '@/lib/apollo';
+import { CREATE_CUSTOMER_ADDRESS } from '@/graphql/extended-queries';
+import { useAuthStore } from '@/store/auth';
 
 type LocationStatus = 'idle' | 'requesting' | 'loading' | 'resolved' | 'denied' | 'unavailable' | 'error';
 
@@ -88,6 +91,50 @@ export const useLocationStore = create<LocationState>()(
             status: 'resolved',
             lastDetectedAt: Date.now(),
           });
+
+          // Auto-guardar dirección si el usuario está autenticado
+          const authState = useAuthStore.getState();
+          if (authState.isAuthenticated && authState.user && sorted.length > 0) {
+            const zone = sorted[0];
+            const lat = get().latitude;
+            const lon = get().longitude;
+
+            // Reverse geocoding con Nominatim para obtener la dirección real
+            let street = zone.name;
+            if (lat && lon) {
+              try {
+                const geoRes = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`,
+                  { headers: { 'Accept-Language': 'es' } }
+                );
+                const geoData = await geoRes.json();
+                if (geoData.display_name) {
+                  street = geoData.display_name;
+                }
+              } catch {
+                // Fallback: usar nombre de zona
+              }
+            }
+
+            try {
+              await client.mutate({
+                mutation: CREATE_CUSTOMER_ADDRESS,
+                variables: {
+                  createCustomersAddressInput: {
+                    customerId: authState.user.id,
+                    recipientName: authState.user.name,
+                    street,
+                    city: zone.city?.name || zone.name,
+                    state: zone.city?.province?.name || '',
+                    isDefault: true,
+                  },
+                },
+              });
+              console.log('Dirección guardada automáticamente para zona:', zone.name);
+            } catch (err) {
+              console.warn('No se pudo guardar la dirección automáticamente:', err);
+            }
+          }
         } catch (error: any) {
           console.error("Error checking coverage:", error);
           const message = error instanceof Error ? error.message : String(error);

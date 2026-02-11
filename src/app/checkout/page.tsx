@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle, Locate, ShoppingCart } from "lucide-react";
+import { Loader2, Truck, CreditCard, MapPin, CheckCircle2, AlertCircle, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { logisticsService } from "@/lib/services/logistics.service";
 import { paymentProvidersService } from "@/lib/services/payment-providers.service";
@@ -56,10 +56,21 @@ export default function CheckoutPage() {
   const [selectedPayment, setSelectedPayment] = useState("");
   const [selectedZone, setSelectedZone] = useState("");
   const [selectedMeetingPoint, setSelectedMeetingPoint] = useState("");
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const addresses = addrData?.customersAddresses?.edges?.map((e: any) => e.node) || [];
   const currentZone = zones.find(z => z.id === selectedZone);
-  const currentShipping = shippingMethods.find(s => s.id === selectedShipping);
+
+  // Shipping cost comes from the zone's flat rate, not the shipping method object
+  const shippingCost = currentZone?.shippingPrice || 0;
+
+  // Auto-seleccionar dirección por defecto cuando cargan
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddress) {
+      const defaultAddr = addresses.find((a: any) => a.isDefault);
+      setSelectedAddress(defaultAddr?.id || addresses[0].id);
+    }
+  }, [addresses, selectedAddress]);
 
   // Cargar zonas al montar el componente
   useEffect(() => {
@@ -87,11 +98,24 @@ export default function CheckoutPage() {
             logisticsService.getShippingMethods(selectedZone),
             logisticsService.getPaymentMethods(selectedZone),
           ]);
-          setShippingMethods(shipData);
-          setPaymentMethods(payData);
 
-          // Reset selections
-          setSelectedShipping("");
+          // Filter to only HOME_DELIVERY methods
+          const homeDelivery = shipData.filter((item: any) => item.type === "HOME_DELIVERY");
+
+          // Deduplicate payment methods by type (used as key in render)
+          const uniquePayment = Array.from(
+            new Map(payData.map((item: any) => [String(item.type), item])).values()
+          );
+
+          setShippingMethods(homeDelivery);
+          setPaymentMethods(uniquePayment);
+
+          // Auto-select HOME_DELIVERY since it's the only option
+          if (homeDelivery.length > 0) {
+            setSelectedShipping(homeDelivery[0].id || homeDelivery[0].type);
+          } else {
+            setSelectedShipping("");
+          }
           setSelectedPayment("");
           setSelectedMeetingPoint("");
 
@@ -125,10 +149,10 @@ export default function CheckoutPage() {
   }, [detectedZone, zones, selectedZone]);
 
   useEffect(() => {
-    if (items.length === 0 && isAuthenticated) {
+    if (items.length === 0 && isAuthenticated && !orderPlaced) {
       router.push("/");
     }
-  }, [items, router, isAuthenticated]);
+  }, [items, router, isAuthenticated, orderPlaced]);
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress || !selectedShipping || !selectedZone || !selectedPayment) {
@@ -146,7 +170,7 @@ export default function CheckoutPage() {
       if (cartId) {
         try {
           const stockValidation = await cartService.validateStock(cartId);
-          if (!stockValidation.valid) {
+          if (!stockValidation.isValid) {
             toast.error("Algunos productos ya no tienen stock suficiente", {
               description: "Por favor revisa tu carrito y actualiza las cantidades."
             });
@@ -158,16 +182,16 @@ export default function CheckoutPage() {
         }
       }
 
+      const currentShipping = shippingMethods.find(s => (s.id || s.type) === selectedShipping);
+
       const { data }: any = await checkout({
         variables: {
           input: {
             cartId,
             addressId: selectedAddress,
             zoneId: selectedZone,
-            shippingMethodId: selectedShipping,
             shippingMethodType: currentShipping?.type || "HOME_DELIVERY",
             paymentMethodType: selectedPayment,
-            meetingPointId: selectedMeetingPoint || undefined,
             notes: "Pedido desde el frontend",
           },
         },
@@ -176,25 +200,19 @@ export default function CheckoutPage() {
       if (data?.checkout?.success) {
         const { orderId } = data.checkout;
 
-        // Lógica para proveedores externos
-        if (selectedPayment === "PAYPHONE") {
+        // Lógica para proveedores externos (CREDIT_CARD usa PayPhone como pasarela)
+        if (selectedPayment === "PAYPHONE" || selectedPayment === "CREDIT_CARD") {
           const init = await paymentProvidersService.initializePayphone({
             orderId,
-            amount: Math.round(subtotal() * 100), // Convertir a centavos para backend
-            tax: 0
           });
 
-          // Si el backend devuelve una URL (a veces lo hace si es redirección)
-          // de lo contrario, aquí se dispararía el SDK de Payphone
-          // Por ahora, como es una transición, redirigimos si existe o informamos éxito
-          toast.success("Pago con Payphone iniciado. Redirigiendo...");
-          // @ts-ignore - Dependiendo de la implementación del backend
-          if (init.responseUrl) {
-            // @ts-ignore
-            window.location.href = init.responseUrl;
-          } else {
-            router.push(`/order-confirmation?orderId=${orderId}`);
-          }
+          setOrderPlaced(true);
+          await clearCart();
+          router.push(
+            `/payment/payphone?orderId=${orderId}&paymentId=${data.checkout.paymentId}` +
+            `&token=${init.token}&storeId=${init.storeId}` +
+            `&amount=${init.amount}&clientTxId=${init.clientTransactionId}`
+          );
           return;
         }
 
@@ -213,7 +231,18 @@ export default function CheckoutPage() {
           return;
         }
 
+        // Transferencia bancaria: redirigir con flag para mostrar instrucciones
+        if (selectedPayment === "BANK_TRANSFER") {
+          setOrderPlaced(true);
+          await clearCart();
+          router.push(
+            `/order-confirmation?orderId=${orderId}&paymentId=${data.checkout.paymentId}&bankTransfer=true`
+          );
+          return;
+        }
+
         // Para otros métodos de pago (CASH_ON_DELIVERY, etc.)
+        setOrderPlaced(true);
         await clearCart();
         router.push(`/order-confirmation?orderId=${orderId}`);
       } else {
@@ -238,7 +267,7 @@ export default function CheckoutPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          {/* Direcciones */}
+          {/* Dirección de Envío */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -251,56 +280,15 @@ export default function CheckoutPage() {
                   <div key={addr.id} className="flex items-start space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value={addr.id} id={addr.id} className="mt-1" />
                     <Label htmlFor={addr.id} className="cursor-pointer font-normal flex-1">
-                      <div className="font-semibold">{addr.street}</div>
-                      <div className="text-sm text-muted-foreground">{addr.city}, {addr.state} {addr.zipCode}</div>
-                      <div className="text-sm text-muted-foreground">{addr.country}</div>
+                      <div className="font-semibold">{addr.recipientName}</div>
+                      <div className="text-sm text-muted-foreground">{addr.street}</div>
+                      <div className="text-sm text-muted-foreground">{addr.city}, {addr.state} {addr.zipCode || ''}</div>
                     </Label>
                   </div>
                 ))}
                 {addresses.length === 0 && (
                   <p className="text-muted-foreground text-sm">No tienes direcciones guardadas. Agrega una en tu perfil.</p>
                 )}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Zona de Envío */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Truck className="h-5 w-5" /> Zona de Envío
-              </CardTitle>
-              {detectedZone && selectedZone === detectedZone.id && (
-                <CardDescription className="text-green-600">
-                  Zona detectada automáticamente según tu ubicación
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent>
-              {locationStatus === "idle" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mb-4"
-                  onClick={detectLocation}
-                >
-                  <Locate className="h-4 w-4 mr-2" />
-                  Detectar mi zona
-                </Button>
-              )}
-              {(locationStatus === "requesting" || locationStatus === "loading") && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Detectando zona...
-                </div>
-              )}
-              <RadioGroup value={selectedZone} onValueChange={setSelectedZone} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {zones.map((zone: any) => (
-                  <div key={zone.id} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value={zone.id} id={zone.id} />
-                    <Label htmlFor={zone.id} className="cursor-pointer font-medium">{zone.name}</Label>
-                  </div>
-                ))}
               </RadioGroup>
             </CardContent>
           </Card>
@@ -336,34 +324,31 @@ export default function CheckoutPage() {
           )}
 
           {/* Método de Envío */}
-          <Card className={!selectedZone ? "opacity-50 pointer-events-none" : ""}>
+          <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" /> Método de Envío
               </CardTitle>
-              {!selectedZone && <CardDescription>Selecciona una zona primero</CardDescription>}
             </CardHeader>
             <CardContent>
-              <RadioGroup value={selectedShipping} onValueChange={setSelectedShipping} className="space-y-4">
-                {shippingMethods.map((method: any) => (
-                  <div key={method.id} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
-                    <RadioGroupItem value={method.id} id={method.id} />
-                    <Label htmlFor={method.id} className="cursor-pointer flex-1 flex justify-between">
-                      <div>
-                        <div className="font-semibold">{method.name}</div>
-                        <div className="text-sm text-muted-foreground">{method.description}</div>
-                      </div>
-                      <div className="font-bold">${Number(method.baseCost).toFixed(2)}</div>
-                    </Label>
+              {shippingMethods.length > 0 ? (
+                <div className="flex items-center space-x-3 border p-4 rounded-lg bg-muted/50">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <div className="flex-1 flex justify-between">
+                    <div>
+                      <div className="font-semibold">Envío a Domicilio</div>
+                    </div>
+                    <div className="font-bold">${Number(shippingCost).toFixed(2)}</div>
                   </div>
-                ))}
-                {selectedZone && shippingMethods.length === 0 && (
-                  <div className="flex items-center gap-2 p-4 text-amber-600 bg-amber-50 rounded-lg">
-                    <AlertCircle className="h-5 w-5" />
-                    <span className="text-sm">No hay métodos de envío disponibles para esta zona.</span>
-                  </div>
-                )}
-              </RadioGroup>
+                </div>
+              ) : selectedZone ? (
+                <div className="flex items-center gap-2 p-4 text-amber-600 bg-amber-50 rounded-lg">
+                  <AlertCircle className="h-5 w-5" />
+                  <span className="text-sm">No hay métodos de envío disponibles para esta zona.</span>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">Detectando zona de envío...</p>
+              )}
             </CardContent>
           </Card>
 
@@ -376,8 +361,8 @@ export default function CheckoutPage() {
             </CardHeader>
             <CardContent>
               <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {paymentMethods.map((method: any) => (
-                  <div key={method.type} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
+                {paymentMethods.map((method: any, index: number) => (
+                  <div key={`${method.type}-${index}`} className="flex items-center space-x-3 border p-4 rounded-lg hover:bg-muted/50 transition-colors">
                     <RadioGroupItem value={method.type} id={method.type} />
                     <Label htmlFor={method.type} className="cursor-pointer font-medium">{method.name}</Label>
                   </div>
@@ -419,12 +404,12 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-muted-foreground text-sm">
                 <span>Envío</span>
-                <span>{currentShipping ? `$${Number(currentShipping.baseCost).toFixed(2)}` : "Calculado al procesar"}</span>
+                <span>${Number(shippingCost).toFixed(2)}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
-                <span>${(Number(subtotal()) + (currentShipping ? Number(currentShipping.baseCost) : 0)).toFixed(2)}</span>
+                <span>${(Number(subtotal()) + Number(shippingCost)).toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>
