@@ -233,7 +233,7 @@ export default function CoverageChecker({ trigger }: CoverageCheckerProps) {
             <div className="text-center">
               <p className="font-semibold">Fuera de cobertura</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Actualmente operamos en tu zona.
+                Actualmente no operamos en tu zona.
               </p>
             </div>
           </div>
