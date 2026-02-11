@@ -43,13 +43,20 @@ export const useCartStore = create<CartStore>()(
         if (state.cartId) {
           try {
             const cart = await cartService.getOrCreateCart();
-            const mappedItems = cart.items.map((item: any) => ({
-              id: item.productId,
-              serverItemId: item.id,
-              name: item.productName,
-              price: item.unitPrice,
-              quantity: item.quantity,
-            }));
+            const mappedItems = cart.items.map((item: any) => {
+              const product = item.product || {};
+              const images = product.images || [];
+              const mainImage = images.find((img: any) => img.isMain)?.url || images[0]?.url;
+              
+              return {
+                id: item.productId,
+                serverItemId: item.id,
+                name: item.productName,
+                price: Number(item.unitPrice),
+                quantity: item.quantity,
+                image: mainImage,
+              };
+            });
             set({ items: mappedItems, cartId: cart.id });
           } catch (error) {
             console.log('Using local cart (server sync failed)');

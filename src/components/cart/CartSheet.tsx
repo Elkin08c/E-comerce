@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { LoginModal } from "@/components/auth/LoginModal";
@@ -52,13 +51,11 @@ export function CartSheet() {
                   <div key={item.id} className="flex gap-4">
                     <div className="relative h-20 w-20 flex-shrink-0 bg-secondary/20 rounded-lg overflow-hidden border">
                       {item.image ? (
-                           // Use unoptimized for external images if needed or just configured domain
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                           <div className="flex items-center justify-center h-full w-full text-muted-foreground">
                               <ShoppingBag className="h-6 w-6" />
@@ -122,11 +119,6 @@ export function CartSheet() {
 
             <div className="pt-6 border-t space-y-4">
                 <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Subtotal</span>
-                        <span className="font-semibold">${Number(total).toFixed(2)}</span>
-                    </div>
-                     <Separator className="my-2" />
                      <div className="flex justify-between text-base font-semibold">
                         <span>Total</span>
                         <span>${Number(total).toFixed(2)}</span>

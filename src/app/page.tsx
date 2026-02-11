@@ -98,7 +98,6 @@ export default function StorefrontHome() {
                      <h2 className="text-3xl font-bold tracking-tight mb-2">Productos Destacados</h2>
                      <p className="text-muted-foreground">Equipamiento industrial de alta calidad</p>
                 </div>
-                <Button variant="outline">Ver Todos</Button>
             </div>
             <ProductGrid />
           </div>
