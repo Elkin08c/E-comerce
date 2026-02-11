@@ -24,14 +24,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSearchParams } from "next/navigation";
 
+import { Suspense } from "react";
+
 // Reuse Product interface from ProductCard or define local if needed, 
 // using 'any' for now to avoid duplications in this specific file if ProductCard doesn't export it well,
 // but simpler to just trust the data shape.
 
-export default function CatalogPage() {
+function CatalogContent() {
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
-  
+
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [queryPriceRange, setQueryPriceRange] = useState<[number, number]>([0, 3000]); // State for API query
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -268,5 +270,17 @@ export default function CatalogPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center py-20">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   );
 }

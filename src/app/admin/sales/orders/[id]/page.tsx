@@ -11,7 +11,7 @@ export default function OrderDetailsPage() {
     const params = useParams();
     const orderId = params.id as string;
 
-    const { data, loading, error, refetch } = useQuery(GET_ORDER_WITH_DETAILS, {
+    const { data, loading, error, refetch } = useQuery<any>(GET_ORDER_WITH_DETAILS, {
         variables: { orderId },
         skip: !orderId,
     });
@@ -112,7 +112,7 @@ export default function OrderDetailsPage() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <div className="font-medium text-gray-900">
-                                                    {payment.paymentMethod?.type === 'BANK_TRANSFER' ? 'Transferencia Bancaria' :
+                                                    {payment.paymentMethod?.type === 'BANK_TRANSFER' || payment.proofOfPayment ? 'Transferencia Bancaria' :
                                                         payment.paymentMethod?.type === 'CREDIT_CARD' ? 'Tarjeta de Crédito' : 'Efectivo'}
                                                 </div>
                                                 <div className="text-sm text-gray-500">
