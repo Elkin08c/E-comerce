@@ -9,16 +9,16 @@ export interface Product {
   id: string;
   name: string;
   slug?: string;
-  basePrice: number;
-  salePrice?: number;
+  salePrice: number;  // Primary price to display
+  costPrice?: number; // Original price (for showing discounts)
   isActive: boolean;
   stock?: number; // Optional - backend may not expose this
   tags?: string[];
   images?: Array<{
-    id: string;
+    id?: string;
     url: string;
     altText?: string;
-    isMain: boolean;
+    isMain?: boolean;
   }>;
 }
 
@@ -48,13 +48,16 @@ export function ProductCard({ product }: ProductCardProps) {
       return;
     }
 
+    const mainImage = product.images?.find(img => img.isMain)?.url || product.images?.[0]?.url;
+    const discountPrice = product.costPrice && product.costPrice < product.salePrice ? product.costPrice : undefined;
+    
     addItem({
       id: product.id,
       name: product.name,
-      price: product.basePrice,
-      salePrice: product.salePrice,
+      price: product.salePrice,
+      salePrice: discountPrice,
       quantity: 1,
-      // image: product.mainImage // TODO: Map real image
+      image: mainImage
     });
     toast.success("Agregado al carrito", {
       description: `${product.name} se ha agregado a tu carrito.`
@@ -64,9 +67,9 @@ export function ProductCard({ product }: ProductCardProps) {
     openCart();
   };
 
-  const hasDiscount = product.salePrice && product.salePrice > 0 && product.salePrice < product.basePrice;
-  const discountPercent = hasDiscount && product.salePrice
-    ? Math.round(((product.basePrice - product.salePrice) / product.basePrice) * 100)
+  const hasDiscount = product.costPrice && product.costPrice > 0 && product.salePrice > product.costPrice;
+  const discountPercent = hasDiscount && product.costPrice
+    ? Math.round(((product.costPrice - product.salePrice) / product.costPrice) * 100)
     : 0;
 
   return (
@@ -137,13 +140,13 @@ export function ProductCard({ product }: ProductCardProps) {
             <p className="text-sm text-muted-foreground mt-1">Producto</p>
           </div>
           <div className="flex flex-col items-end">
-            {hasDiscount && product.salePrice ? (
+            {hasDiscount && product.costPrice ? (
               <>
                 <span className="text-lg font-bold text-destructive">${(product.salePrice || 0).toFixed(2)}</span>
-                <span className="text-sm text-muted-foreground line-through">${(product.basePrice || 0).toFixed(2)}</span>
+                <span className="text-sm text-muted-foreground line-through">${(product.costPrice || 0).toFixed(2)}</span>
               </>
             ) : (
-              <span className="text-lg font-bold text-primary">${(product.basePrice || 0).toFixed(2)}</span>
+              <span className="text-lg font-bold text-primary">${(product.salePrice || 0).toFixed(2)}</span>
             )}
           </div>
         </div>
