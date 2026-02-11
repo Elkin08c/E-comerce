@@ -122,6 +122,92 @@ export const GET_ORDERS = gql`
           status
           customerId
           createdAt
+          customer {
+            firstName
+            lastName
+            email
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ORDER_WITH_DETAILS = gql`
+  query GetOrderWithDetails($orderId: String!) {
+    orderWithDetails(orderId: $orderId) {
+      id
+      orderNumber
+      status
+      paymentStatus
+      totalAmount
+      subtotal
+      taxAmount
+      shippingAmount
+      discountAmount
+      createdAt
+      notes
+      internalNotes
+      customer {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+      address {
+        street
+        city
+        state
+        zipCode
+      }
+      shipping {
+        recipientName
+        recipientPhone
+        shippingAddress
+        trackingNumber
+        shippedAt
+        deliveredAt
+      }
+      items {
+        id
+        productName
+        variantName
+        quantity
+        unitPrice
+        totalPrice
+        sku
+        product {
+            id
+            name
+            sku
+        }
+        variant {
+            id
+            sku
+            name
+        }
+      }
+      payments {
+        id
+        amount
+        status
+        processedAt
+        createdAt
+        proofOfPayment
+        paymentMethod {
+            type
+            bankName
+            accountNumber
+        }
+      }
+      statusHistory {
+        status
+        notes
+        createdAt
+        changedByUser {
+            firstName
+            lastName
         }
       }
     }
