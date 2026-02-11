@@ -12,14 +12,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { GET_CATEGORIES } from "@/graphql/queries";
 import { customerAuthService } from "@/lib/services/customer-auth.service";
 import { useAuthStore } from "@/store/auth";
 import { useCartStore } from "@/store/cart";
 import { useLocationStore } from "@/store/location";
-import { useQuery } from "@apollo/client/react";
-import { Loader2, MapPin, Menu, Search, ShoppingBag, ShoppingCart, User } from "lucide-react";
+import { MapPin, Search, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,10 +25,9 @@ import { useEffect, useState } from "react";
 export default function Navbar() {
   const { toggleCart, items } = useCartStore();
   const cartCount = items.reduce((acc, item) => acc + item.quantity, 0);
-  const { data, loading } = useQuery<any>(GET_CATEGORIES);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { user, isAuthenticated, setUser, logout: logoutStore } = useAuthStore();
+  const { user, isAuthenticated, logout: logoutStore } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
@@ -57,66 +53,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const categories = data?.categories?.edges?.map((edge: any) => edge.node) || [];
-
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled
-          ? "bg-background/80 backdrop-blur-md border-b shadow-sm"
-          : "bg-transparent border-b border-transparent"
+          ? "bg-background/95 backdrop-blur-lg border-b border-border/50 shadow-lg"
+          : "bg-background/60 backdrop-blur-sm border-b border-border/20"
         }`}
     >
       <div className="container mx-auto flex h-20 items-center px-4 gap-4">
-        {/* Mobile Menu */}
-        {isMounted ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-              <div className="flex flex-col h-full">
-                <div className="border-b border-border pb-4 mb-6">
-                  <h2 className="text-2xl font-bold tracking-tight">MENÚ</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Navegación principal</p>
-                </div>
-                <nav className="flex flex-col gap-2 flex-1">
-                  <Link 
-                    href="/" 
-                    className="text-base font-semibold py-3 px-4 rounded-lg hover:bg-secondary/50 transition-colors border-l-4 border-transparent hover:border-primary"
-                  >
-                    Inicio
-                  </Link>
-                  {loading ? (
-                    <div className="flex items-center gap-2 py-3 px-4">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className="text-sm text-muted-foreground">Cargando...</span>
-                    </div>
-                  ) : (
-                    categories.map((cat: any) => (
-                      <Link
-                        key={cat.id}
-                        href={`/category/${cat.slug}`}
-                        className="text-base py-3 px-4 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors border-l-4 border-transparent hover:border-primary"
-                      >
-                        {cat.name}
-                      </Link>
-                    ))
-                  )}
-                </nav>
-                <div className="border-t border-border pt-4 mt-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Soluciones Industriales</p>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <Button variant="ghost" size="icon" className="lg:hidden shrink-0">
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
-
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 mr-6 shrink-0">
           <Image
@@ -129,28 +73,15 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-6 text-sm font-medium">
-          {categories.slice(0, 5).map((cat: any) => (
-            <Link
-              key={cat.id}
-              href={`/category/${cat.slug}`}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </nav>
-
         <div className="flex-1" />
 
         {/* Search Bar - Hidden on small mobile */}
-        <form onSubmit={handleSearch} className="hidden md:flex items-center relative max-w-[200px] lg:max-w-[300px] w-full mr-4">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <form onSubmit={handleSearch} className="hidden md:flex items-center relative max-w-[200px] lg:max-w-[320px] w-full mr-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60 z-10" />
           <Input
             type="search"
             placeholder="Buscar productos..."
-            className="pl-9 h-9 bg-secondary/50 border-transparent focus-visible:bg-background focus-visible:border-input transition-all"
+            className="pl-10 pr-4 h-10 bg-muted/40 border-border/40 rounded-full focus-visible:bg-background focus-visible:border-primary/50 focus-visible:shadow-sm transition-all duration-200 placeholder:text-muted-foreground/60"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -238,10 +169,10 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
+              <Button variant="ghost" size="sm" asChild className="hidden sm:flex font-medium hover:bg-primary/10 transition-all">
                 <Link href="/login">Ingresar</Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" asChild className="font-medium shadow-sm hover:shadow-md transition-all">
                 <Link href="/register">Registrarse</Link>
               </Button>
             </div>

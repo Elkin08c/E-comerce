@@ -164,6 +164,11 @@ export const GET_CATEGORY_BY_SLUG = gql`
         isFeatured
         isActive
         tags
+        images {
+          url
+          altText
+        }
+        stock
       }
     }
   }

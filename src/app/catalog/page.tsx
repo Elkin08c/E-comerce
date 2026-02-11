@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@apollo/client/react";
 import { GET_CATALOG_PRODUCTS, GET_CATEGORIES } from "@/graphql/queries";
 import Navbar from "@/components/Navbar";
@@ -22,12 +22,16 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { useSearchParams } from "next/navigation";
 
 // Reuse Product interface from ProductCard or define local if needed, 
 // using 'any' for now to avoid duplications in this specific file if ProductCard doesn't export it well,
 // but simpler to just trust the data shape.
 
 export default function CatalogPage() {
+  const searchParams = useSearchParams();
+  const categoryFromUrl = searchParams.get("category");
+  
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [queryPriceRange, setQueryPriceRange] = useState<[number, number]>([0, 3000]); // State for API query
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -37,6 +41,13 @@ export default function CatalogPage() {
   // Fetch Categories
   const { data: catData, loading: catLoading } = useQuery<any>(GET_CATEGORIES);
   const categories = catData?.categories?.edges?.map((e: any) => e.node) || [];
+
+  // Apply category filter from URL when categories are loaded
+  useEffect(() => {
+    if (categoryFromUrl && categories.length > 0 && selectedCategories.length === 0) {
+      setSelectedCategories([categoryFromUrl]);
+    }
+  }, [categoryFromUrl, categories, selectedCategories.length]);
 
   // Parse sortBy to enum value
   const getSortEnum = (sortValue: string) => {

@@ -21,7 +21,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-2xl font-bold tracking-tight">COAVPRO<span className="text-primary">.</span></h3>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              Soluciones industriales de calidad en Cuenca. Equipamiento profesional, componentes y accesorios con garantía extendida.
+              Soluciones industriales de calidad, Equipamiento profesional, componentes y accesorios con garantía extendida.
             </p>
             <div className="flex gap-4 pt-2">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
@@ -36,7 +36,7 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               {categories.slice(0, 6).map((cat: any) => (
                 <li key={cat.id}>
-                  <Link href={`/category/${cat.slug}`} className="hover:text-primary transition-colors">
+                  <Link href={`/catalog?category=${cat.id}`} className="hover:text-primary transition-colors">
                     {cat.name}
                   </Link>
                 </li>
