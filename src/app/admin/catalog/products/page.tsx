@@ -60,6 +60,7 @@ export default function ProductsPage() {
     categoryId: "",
     description: "",
     stock: "0",
+    status: "ACTIVE",
   };
 
   const [formData, setFormData] = useState(initialForm);
@@ -84,6 +85,7 @@ export default function ProductsPage() {
         categoryId: product.categoryId || (catData?.categories?.edges[0]?.node?.id || ""),
         description: product.description || "",
         stock: (product.stock ?? 0).toString(),
+        status: product.status || "ACTIVE",
       });
       setExistingImagesList(product.images || []);
       setNewImages([]);
@@ -107,7 +109,8 @@ export default function ProductsPage() {
           salePrice: parseFloat(formData.salePrice),
           description: formData.description,
           categoryId: formData.categoryId,
-          stock: parseInt(formData.stock)
+          stock: parseInt(formData.stock),
+          status: formData.status,
         };
 
         // Only include fields that changed or are required by update input
@@ -136,7 +139,8 @@ export default function ProductsPage() {
               salePrice: parseFloat(formData.salePrice),
               description: formData.description,
               stock: parseInt(formData.stock),
-              tags: ["general"] // Default tag
+              status: "ACTIVE",
+              tags: ["general"]
             }
           }
         });
@@ -223,6 +227,7 @@ export default function ProductsPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">SKU</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Precio</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Stock</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Acciones</th>
             </tr>
           </thead>
@@ -247,6 +252,17 @@ export default function ProductsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">{node.sku}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold">${(node.salePrice ?? 0).toFixed(2)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">{node.stock ?? 0}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
+                    node.status === "ACTIVE" ? "bg-green-100 text-green-700" :
+                    node.status === "OUT_OF_STOCK" ? "bg-yellow-100 text-yellow-700" :
+                    "bg-gray-100 text-gray-500"
+                  }`}>
+                    {node.status === "ACTIVE" ? "Activo" :
+                     node.status === "INACTIVE" ? "Inactivo" :
+                     node.status === "OUT_OF_STOCK" ? "Sin stock" : node.status}
+                  </span>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(node)}>
@@ -348,6 +364,24 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
             </div>
+            {editingProduct && (
+              <div className="space-y-2">
+                <Label htmlFor="status">Estado</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(val) => setFormData({ ...formData, status: val })}
+                >
+                  <SelectTrigger className="h-12 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Activo</SelectItem>
+                    <SelectItem value="INACTIVE">Inactivo</SelectItem>
+                    <SelectItem value="OUT_OF_STOCK">Sin stock</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="space-y-2 col-span-2">
               <Label htmlFor="desc">Descripción</Label>
               <Textarea
