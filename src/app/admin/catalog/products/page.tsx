@@ -336,7 +336,7 @@ export default function ProductsPage() {
                 value={formData.categoryId}
                 onValueChange={(val) => setFormData({ ...formData, categoryId: val })}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 w-full">
                   <SelectValue placeholder="Seleccionar Categoría" />
                 </SelectTrigger>
                 <SelectContent>
