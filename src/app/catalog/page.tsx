@@ -39,6 +39,7 @@ function CatalogContent() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showOnlyInStock, setShowOnlyInStock] = useState(false);
   const [sortBy, setSortBy] = useState<string>("default");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch Categories
   const { data: catData, loading: catLoading } = useQuery<any>(GET_CATEGORIES);
@@ -72,7 +73,7 @@ function CatalogContent() {
         search: undefined // Helper for search if added later
       },
       sort: getSortEnum(sortBy),
-      page: 1,
+      page: currentPage,
       limit: 12
     },
     fetchPolicy: "network-only" // Ensure fresh data on filter change
@@ -82,7 +83,21 @@ function CatalogContent() {
     return prodData?.catalogProducts?.data || [];
   }, [prodData]);
 
-  const totalResults = prodData?.catalogProducts?.meta?.total || 0;
+  const meta = prodData?.catalogProducts?.meta;
+  const totalResults = meta?.total || 0;
+  const lastPage = meta?.lastPage || 1;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategories, queryPriceRange, showOnlyInStock, sortBy]);
+
+  const pageNumbers = useMemo(() => {
+    const pages: number[] = [];
+    const start = Math.max(1, currentPage - 2);
+    const end = Math.min(lastPage, currentPage + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }, [currentPage, lastPage]);
 
   const toggleCategory = (catId: string) => {
     setSelectedCategories(prev =>
@@ -262,6 +277,39 @@ function CatalogContent() {
                 {products.map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
+              </div>
+            )}
+
+            {!prodLoading && lastPage > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => { setCurrentPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                >
+                  Anterior
+                </Button>
+
+                {pageNumbers.map(n => (
+                  <Button
+                    key={n}
+                    variant={n === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setCurrentPage(n); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  >
+                    {n}
+                  </Button>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === lastPage}
+                  onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                >
+                  Siguiente
+                </Button>
               </div>
             )}
           </div>
