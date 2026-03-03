@@ -68,7 +68,7 @@ export default function Navbar() {
             alt="COAVPRO"
             width={200}
             height={64}
-            className="h-16 w-auto object-contain"
+            className="h-30 w-auto object-contain"
             priority
           />
         </Link>
