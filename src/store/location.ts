@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { client } from '@/lib/apollo';
 import { CREATE_CUSTOMER_ADDRESS } from '@/graphql/extended-queries';
+import { GET_CUSTOMER_ADDRESSES } from '@/graphql/queries';
 import { useAuthStore } from '@/store/auth';
 
 type LocationStatus = 'idle' | 'requesting' | 'loading' | 'resolved' | 'denied' | 'unavailable' | 'error';
@@ -117,22 +118,40 @@ export const useLocationStore = create<LocationState>()(
             }
 
             try {
-              await client.mutate({
-                mutation: CREATE_CUSTOMER_ADDRESS,
-                variables: {
-                  createCustomersAddressInput: {
-                    customerId: authState.user.id,
-                    recipientName: authState.user.name,
-                    street,
-                    city: zone.city?.name || zone.name,
-                    state: zone.city?.province?.name || '',
-                    isDefault: true,
-                  },
-                },
+              const city = zone.city?.name || zone.name;
+              const state = zone.city?.province?.name || '';
+
+              // Verify if an identical address already exists for the user
+              const { data: addrData } = await client.query<any>({
+                query: GET_CUSTOMER_ADDRESSES,
+                fetchPolicy: 'network-only' // Ensure we get fresh data
               });
-              console.log('Dirección guardada automáticamente para zona:', zone.name);
+
+              const addresses = addrData?.customersAddresses?.edges?.map((e: any) => e.node) || [];
+              const addressExists = addresses.some(
+                (a: any) => a.street === street && a.city === city && a.state === state
+              );
+
+              if (addressExists) {
+                console.log('La dirección para la zona seleccionada ya existe, evadiendo duplicados.');
+              } else {
+                await client.mutate({
+                  mutation: CREATE_CUSTOMER_ADDRESS,
+                  variables: {
+                    createCustomersAddressInput: {
+                      customerId: authState.user.id,
+                      recipientName: authState.user.name,
+                      street,
+                      city,
+                      state,
+                      isDefault: true,
+                    },
+                  },
+                });
+                console.log('Dirección guardada automáticamente para zona:', zone.name);
+              }
             } catch (err) {
-              console.warn('No se pudo guardar la dirección automáticamente:', err);
+              console.warn('No se pudo validar/guardar la dirección automáticamente:', err);
             }
           }
         } catch (error: any) {

@@ -425,3 +425,20 @@ export const GET_CATALOG_PRODUCTS = gql`
   }
 `;
 
+
+export const GET_WISHLIST = gql`
+  query GetWishlist($first: Int) {
+    wishlists(first: $first) {
+      edges {
+        node {
+          id
+          userId
+          productId
+          variantId
+          priority
+          notes
+        }
+      }
+    }
+  }
+`;

@@ -11,8 +11,10 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
 import { useCartStore } from "@/store/cart";
+import { useWishlistStore } from "@/store/wishlist";
+import { useAuthStore } from "@/store/auth";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Define manual types for the product query
 interface Product {
@@ -61,6 +63,8 @@ export default function ProductDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const { addItem, openCart } = useCartStore();
+  const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist, fetchWishlist } = useWishlistStore();
+  const { isAuthenticated } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -70,6 +74,34 @@ export default function ProductDetailPage() {
   });
 
   const product = data?.product || null;
+  const inWishlist = product ? isInWishlist(product.id) : false;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchWishlist();
+    }
+  }, [isAuthenticated, fetchWishlist]);
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      toast.error("Inicia sesión para usar la lista de deseos");
+      return;
+    }
+
+    if (!product) return;
+
+    try {
+      if (inWishlist) {
+        await removeFromWishlist(product.id);
+        toast.success("Eliminado de favoritos");
+      } else {
+        await addToWishlist(product.id);
+        toast.success("Agregado a favoritos");
+      }
+    } catch (error) {
+      toast.error("Error al actualizar favoritos");
+    }
+  };
 
   if (loading) {
     return (
@@ -132,7 +164,7 @@ export default function ProductDetailPage() {
         image: product.images?.[0]?.url,
       });
       toast.success(`${quantity} ${quantity === 1 ? 'unidad agregada' : 'unidades agregadas'} al carrito`);
-      
+
       // Auto-open cart after adding item
       openCart();
     } catch (error) {
@@ -219,11 +251,14 @@ export default function ProductDetailPage() {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Share2 className="h-5 w-5 text-muted-foreground" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Heart className="h-5 w-5 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`rounded-full transition-colors ${inWishlist ? 'text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100' : 'text-muted-foreground hover:text-foreground'}`}
+                    onClick={handleWishlistToggle}
+                    title={inWishlist ? "Eliminar de favoritos" : "Agregar a favoritos"}
+                  >
+                    <Heart className={`h-5 w-5 transition-all ${inWishlist ? 'fill-current scale-110' : ''}`} />
                   </Button>
                 </div>
               </div>
@@ -239,17 +274,6 @@ export default function ProductDetailPage() {
                 ) : (
                   <span className="text-3xl font-bold text-primary">${(product.basePrice || 0).toFixed(2)}</span>
                 )}
-                {/* Placeholder for rating */}
-                <div className="flex items-center gap-1 text-sm">
-                  <div className="flex text-yellow-500">
-                    <Star className="h-4 w-4 fill-current" />
-                    <Star className="h-4 w-4 fill-current" />
-                    <Star className="h-4 w-4 fill-current" />
-                    <Star className="h-4 w-4 fill-current" />
-                    <Star className="h-4 w-4 fill-current text-muted" />
-                  </div>
-                  <span className="text-muted-foreground">(24 reseñas)</span>
-                </div>
               </div>
             </div>
 
@@ -304,28 +328,6 @@ export default function ProductDetailPage() {
                 <p className="text-sm text-orange-600 font-medium">
                   ⚠️ Solo quedan {maxQuantity} unidades disponibles
                 </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg">
-                <ShieldCheck className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-semibold text-foreground">Garantía de 2 Años</p>
-                  <p>Cobertura completa</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-secondary/10 rounded-lg">
-                <Loader2 className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-semibold text-foreground">Envío Rápido</p>
-                  <p>2-3 días hábiles</p>
-                </div>
-              </div>
-              {product.sku && (
-                <div className="col-span-2 text-xs">
-                  SKU: <span className="font-mono">{product.sku}</span>
-                </div>
               )}
             </div>
           </div>
